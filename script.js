@@ -95,8 +95,19 @@ function loadData() {
       }
 
       data.forEach((row) => {
-        var betValue = String(row[16] || "").trim();
-        var winningChoice = String(row[10] || "").trim(); // Cột K - Đội thắng kèo
+        var betValue = String(row[16] || "").trim(); // Lựa chọn của user ("Cửa trên" hoặc "Cửa dưới")
+        var winningTeam = String(row[10] || "").trim(); // Tên đội thắng kèo (Cột K)
+        var upperTeam = String(row[12] || "").trim(); // Tên đội cửa trên (Cột M)
+
+        // Quy đổi tên đội thắng thành Cửa trên / Cửa dưới
+        var actualWinningChoice = "";
+        if (winningTeam) {
+            if (winningTeam === upperTeam) {
+                actualWinningChoice = "Cửa trên";
+            } else {
+                actualWinningChoice = "Cửa dưới";
+            }
+        }
 
         // Nếu ở tab quá khứ, thêm thuộc tính disabled để khóa không cho click sửa đổi
         var isDisabled = currentTab === "past" ? "disabled" : "";
@@ -106,11 +117,11 @@ function loadData() {
           var badgeClass = "status-wait";
           var badgeText = "⏳ Chờ KQ";
           
-          if (winningChoice) {
+          if (actualWinningChoice) {
             if (betValue === "") {
                badgeClass = "status-lose";
                badgeText = "❌ Không chọn";
-            } else if (winningChoice === betValue) {
+            } else if (actualWinningChoice === betValue) {
                badgeClass = "status-win";
                badgeText = "✅ Thắng";
             } else {
