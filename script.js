@@ -4,10 +4,41 @@ const GAS_URL =
 let currentUserEmail = "";
 let currentTab = "active"; // Các trạng thái: "active", "past", hoặc "leaderboard"
 
+// Auto login check on page load
+document.addEventListener("DOMContentLoaded", () => {
+  const savedEmail = localStorage.getItem("currentUserEmail");
+  const savedName = localStorage.getItem("currentUserName");
+  if (savedEmail) {
+    currentUserEmail = savedEmail;
+    
+    // Display stored info immediately to prevent flashing blank UI
+    document.getElementById("userInfo").innerHTML = `
+      <span>⚽ <b>Người chơi:</b> ${savedName || 'Đang tải...'}</span> 
+      <span style="color: #a0aec0">|</span> 
+      <span>📧 <b>Email:</b> ${savedEmail}</span>
+      <button class="logout-btn" onclick="logout()">Đăng xuất</button>
+    `;
+    
+    document.getElementById("loginSectionWrapper").style.display = "none";
+    document.getElementById("userInfo").style.display = "flex";
+    document.getElementById("tabContainer").style.display = "flex";
+    
+    // Mặc định ban đầu hiển thị bảng trận đấu
+    document.getElementById("mainTable").style.display = "table";
+    document.getElementById("leaderboardTable").style.display = "none";
+    
+    loadData();
+  }
+});
+
 
 function handleCredentialResponse(response) {
   const payload = JSON.parse(atob(response.credential.split(".")[1]));
   currentUserEmail = payload.email;
+  
+  // Save login session
+  localStorage.setItem("currentUserEmail", payload.email);
+  localStorage.setItem("currentUserName", payload.name || "");
 
   document.getElementById("loginSectionWrapper").style.display = "none";
   document.getElementById("userInfo").style.display = "flex";
@@ -68,10 +99,13 @@ function loadData() {
   // Lấy thông tin user
   apiCall("getUserInfo")
     .then((user) => {
+      // Sync names to localstorage in case it changed
+      localStorage.setItem("currentUserName", user.name || "");
       document.getElementById("userInfo").innerHTML = `
         <span>⚽ <b>Người chơi:</b> ${user.name}</span> 
         <span style="color: #a0aec0">|</span> 
         <span>📧 <b>Email:</b> ${user.email}</span>
+        <button class="logout-btn" onclick="logout()">Đăng xuất</button>
       `;
     })
     .catch(console.error);
@@ -288,4 +322,10 @@ function closeWarningModal() {
       modal.style.display = "none";
     }, 300); // Wait for transition fade out (300ms)
   }
+}
+
+function logout() {
+  localStorage.removeItem("currentUserEmail");
+  localStorage.removeItem("currentUserName");
+  window.location.reload();
 }
