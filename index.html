@@ -30,6 +30,9 @@
         <button id="btnPastMatches" class="tab-btn" onclick="switchTab('past')">
           Lịch sử (Chỉ xem)
         </button>
+        <button id="btnLeaderboard" class="tab-btn" onclick="switchTab('leaderboard')">
+          🏆 Bảng vàng
+        </button>
       </div>
 
       <table id="mainTable" style="display: none">
@@ -45,6 +48,20 @@
           </tr>
         </thead>
         <tbody id="matchBody"></tbody>
+      </table>
+      <table id="leaderboardTable" style="display: none">
+        <thead>
+          <tr class="rank-header">
+            <th>Hạng</th>
+            <th>Thành viên</th>
+            <th>Tổng điểm</th>
+            <th>Trận đúng</th>
+            <th>Trận sai</th>
+            <th>Tỷ lệ thắng</th>
+            <th>Chuỗi thắng Max</th>
+          </tr>
+        </thead>
+        <tbody id="leaderboardBody"></tbody>
       </table>
     </div>
     <div id="toast"></div>
