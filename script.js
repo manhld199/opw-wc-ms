@@ -12,40 +12,43 @@ function handleCredentialResponse(response) {
   document.getElementById("userInfo").style.display = "flex";
   document.getElementById("tabContainer").style.display = "flex";
 
-  // Mặc định ban đầu sẽ hiển thị bảng trận đấu cược
+  // Mặc định ban đầu hiển thị bảng trận đấu
   document.getElementById("mainTable").style.display = "table";
   document.getElementById("leaderboardTable").style.display = "none";
 
   loadData();
 }
 
-// Sửa lại hàm apiCall dạng JSON String + xử lý redirect 302 của Google Apps Script
+// GIỮ NGUYÊN HÀM APICALL GỐC DÙNG FORMDATA CỦA BẠN
 async function apiCall(action, params = {}) {
-  const payload = {
-    action: action,
-    email: currentUserEmail,
-    ...params,
-  };
+  const formData = new URLSearchParams();
+
+  formData.append("action", action);
+  formData.append("email", currentUserEmail);
+
+  Object.keys(params).forEach((key) => {
+    formData.append(key, params[key]);
+  });
 
   const response = await fetch(GAS_URL, {
     method: "POST",
-    body: JSON.stringify(payload),
-    redirect: "follow",
+    body: formData,
   });
 
   return await response.json();
 }
 
+// HÀM SWITCH TAB CẬP NHẬT 3 NÚT ĐIỀU HƯỚNG
 function switchTab(tabName) {
   if (currentTab === tabName) return;
   currentTab = tabName;
 
-  // Cập nhật trạng thái active UI của hệ thống nút tab điều hướng
+  // Cập nhật trạng thái active UI của nút tab
   document.getElementById("btnActiveMatches").classList.toggle("active", tabName === "active");
   document.getElementById("btnPastMatches").classList.toggle("active", tabName === "past");
   document.getElementById("btnLeaderboard").classList.toggle("active", tabName === "leaderboard");
 
-  // Xử lý ẩn hiện bảng phù hợp với tab được click chọn
+  // Xử lý ẩn hiện bảng phù hợp với tab được chọn
   if (tabName === "leaderboard") {
     document.getElementById("mainTable").style.display = "none";
     document.getElementById("leaderboardTable").style.display = "table";
@@ -57,9 +60,8 @@ function switchTab(tabName) {
   }
 }
 
-// Hàm tải dữ liệu trận đấu (Trận sắp đá & Lịch sử cược cũ)
 function loadData() {
-  // Lấy thông tin user hiển thị ở banner đầu trang
+  // Lấy thông tin user
   apiCall("getUserInfo")
     .then((user) => {
       document.getElementById("userInfo").innerHTML = `
@@ -120,7 +122,7 @@ function loadData() {
     .catch(console.error);
 }
 
-// Hàm tải dữ liệu bảng điểm xếp hạng tình nguyện viên
+// THÊM MỚI HÀM ĐỔ DỮ LIỆU BẢNG VÀNG
 function loadLeaderboardData() {
   var tbody = document.getElementById("leaderboardBody");
   tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 20px;">⏳ Đang tải bảng điểm...</td></tr>`;
@@ -135,13 +137,13 @@ function loadLeaderboardData() {
       }
 
       data.forEach((player) => {
-        // Định dạng hiển thị % từ số thập phân trong Sheets (ví dụ 0.75 -> 75.0%)
+        // Định dạng hiển thị % từ số thập phân (ví dụ 0.75 -> 75.0%)
         let winRateFormatted =
           typeof player.winRate === "number"
             ? (player.winRate * 100).toFixed(1) + "%"
             : player.winRate;
 
-        // Đổ màu phân hạng đặc biệt theo class CSS dựa trên dữ liệu hàng
+        // Phân cấp hàng dựa trên thứ hạng hoặc điểm âm để đồng bộ CSS
         let highlightClass = "";
         if (player.rank == 1) highlightClass = "top-1";
         else if (player.rank == 2) highlightClass = "top-2";
@@ -167,7 +169,7 @@ function loadLeaderboardData() {
 }
 
 function bet(btn, stt, choice) {
-  // Chặn trường hợp cố tình kích hoạt khi đang ở tab xem lại lịch sử
+  // Chặn trường hợp kích hoạt cược nhầm khi không ở tab active
   if (currentTab === "past" || currentTab === "leaderboard") return;
 
   btn.innerText = "⏳...";
