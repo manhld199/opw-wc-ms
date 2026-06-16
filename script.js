@@ -93,8 +93,8 @@ function switchTab(tabName) {
   }
 }
 
-function loadData() {
-  showLoader(); // Bật loader khi tải dữ liệu
+function loadData(showLoading = true) {
+  if (showLoading) showLoader(); // Bật loader khi tải dữ liệu
 
   // Lấy thông tin user
   apiCall("getUserInfo")
@@ -274,22 +274,21 @@ function bet(btn, stt, choice) {
   // Chặn trường hợp kích hoạt cược nhầm khi không ở tab active
   if (currentTab === "past" || currentTab === "leaderboard") return;
 
+  const originalText = btn.innerText;
   btn.innerText = "⏳...";
-  showLoader();
 
   apiCall("submitBet", {
     stt: stt,
     choice: choice,
   })
     .then((res) => {
-      hideLoader();
       showToast(typeof res === "string" ? res : JSON.stringify(res));
-      loadData();
+      loadData(false);
     })
     .catch((err) => {
-      hideLoader();
       console.error(err);
       showToast("Có lỗi xảy ra");
+      btn.innerText = originalText;
     });
 }
 
