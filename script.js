@@ -62,6 +62,8 @@ function switchTab(tabName) {
 }
 
 function loadData() {
+  showLoader(); // Bật loader khi tải dữ liệu
+
   // Lấy thông tin user
   apiCall("getUserInfo")
     .then((user) => {
@@ -91,10 +93,16 @@ function loadData() {
       if (data.length === 0) {
         let colspan = currentTab === "past" ? "8" : "7";
         tbody.innerHTML = `<tr><td colspan="${colspan}" style="text-align:center; padding: 30px; color: #718096;">Không có trận đấu nào trong danh mục này.</td></tr>`;
+        hideLoader();
         return;
       }
 
       data.forEach((row) => {
+        var homeScore = row[6] !== "" ? row[6] : "";
+        var awayScore = row[7] !== "" ? row[7] : "";
+        var scoreDisplay = (homeScore !== "" && awayScore !== "") ? ` <span style="color:#e53e3e; font-weight:bold;">${homeScore} - ${awayScore}</span> ` : " vs ";
+        var matchTitle = `${row[4]}${scoreDisplay}${row[5]}`;
+
         var betValue = String(row[16] || "").trim(); // Lựa chọn của user ("Cửa trên" hoặc "Cửa dưới")
         var winningTeam = String(row[10] || "").trim(); // Tên đội thắng kèo (Cột K)
         var upperTeam = String(row[12] || "").trim(); // Tên đội cửa trên (Cột M)
@@ -136,7 +144,7 @@ function loadData() {
           <tr>
             <td data-label="STT">${row[0]}</td>
             <td data-label="Thời gian">${row[3]}</td>
-            <td data-label="Trận đấu">${row[4]} vs ${row[5]}</td>
+            <td data-label="Trận đấu">${matchTitle}</td>
             <td data-label="Cửa trên">${row[12]}</td>
             <td data-label="Chấp">${row[13]}</td>
 
@@ -161,12 +169,17 @@ function loadData() {
           </tr>
         `;
       });
+      hideLoader(); // Tắt loader khi render xong
     })
-    .catch(console.error);
+    .catch((err) => {
+      console.error(err);
+      hideLoader(); // Tắt loader khi có lỗi
+    });
 }
 
 // THÊM MỚI HÀM ĐỔ DỮ LIỆU BẢNG VÀNG
 function loadLeaderboardData() {
+  showLoader();
   var tbody = document.getElementById("leaderboardBody");
   tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 20px;">⏳ Đang tải bảng điểm...</td></tr>`;
 
@@ -176,6 +189,7 @@ function loadLeaderboardData() {
 
       if (!data || data.error || data.length === 0) {
         tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 20px; color:#e53e3e;">Không thể tải dữ liệu hoặc bảng trống!</td></tr>`;
+        hideLoader();
         return;
       }
 
@@ -204,10 +218,12 @@ function loadLeaderboardData() {
           </tr>
         `;
       });
+      hideLoader();
     })
     .catch((err) => {
       console.error(err);
       tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 20px; color:#e53e3e;">Có lỗi xảy ra khi kết nối đồng bộ!</td></tr>`;
+      hideLoader();
     });
 }
 
