@@ -80,6 +80,18 @@
         <button id="btnRefresh" class="refresh-btn" onclick="manualRefresh()" title="Làm mới dữ liệu">🔄</button>
       </div>
 
+      <div id="filterContainer" class="filter-container" style="display: none">
+        <input type="text" id="searchInput" placeholder="Tìm đội bóng..." oninput="applyFilters()" class="filter-input">
+        <select id="statusFilter" onchange="applyFilters()" class="filter-select">
+          <option value="all">Tất cả trận đấu</option>
+          <option value="unbet">Chưa chọn kèo</option>
+          <option value="bet">Đã chọn kèo</option>
+          <option value="win">Thắng (Chỉ Lịch sử)</option>
+          <option value="lose">Thua (Chỉ Lịch sử)</option>
+          <option value="wait">Đang chờ KQ (Lịch sử)</option>
+        </select>
+      </div>
+
       <table id="mainTable" style="display: none">
         <thead>
           <tr>

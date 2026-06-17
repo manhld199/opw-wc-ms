@@ -322,6 +322,50 @@ td:nth-child(5) {
   width: fit-content;
 }
 
+/* --- BỘ LỌC TÌM KIẾM --- */
+.filter-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.filter-input, .filter-select {
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  font-family: inherit;
+  font-size: 14px;
+  color: #1e293b;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.filter-input {
+  flex: 1;
+  min-width: 200px;
+}
+
+.filter-select {
+  min-width: 180px;
+  background-color: white;
+  cursor: pointer;
+}
+
+.filter-input:focus, .filter-select:focus {
+  border-color: #2e7d32;
+  box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
+}
+
+@media (max-width: 768px) {
+  .filter-container {
+    flex-direction: column;
+  }
+  .filter-input, .filter-select {
+    width: 100%;
+  }
+}
+
 .tab-btn {
   padding: 10px 20px;
   border: none;

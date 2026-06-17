@@ -4,6 +4,9 @@ const GAS_URL =
 let currentUserEmail = "";
 let currentTab = "active"; // Các trạng thái: "active", "past", hoặc "leaderboard"
 
+// Mảng lưu trữ dữ liệu các trận đấu đang được chọn (để phục vụ search/filter)
+let currentMatchesData = [];
+
 // Feature 1: Countdown intervals tracker (stt -> intervalId)
 var countdownIntervals = {};
 // Feature 8: Match data cache for detail modal (stt -> rowArray)
@@ -30,6 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Mặc định ban đầu hiển thị bảng trận đấu
     document.getElementById("mainTable").style.display = "table";
+    document.getElementById("filterContainer").style.display = "flex";
     document.getElementById("leaderboardTable").style.display = "none";
 
     loadData();
@@ -52,6 +56,7 @@ function handleCredentialResponse(response) {
 
   // Mặc định ban đầu hiển thị bảng trận đấu
   document.getElementById("mainTable").style.display = "table";
+  document.getElementById("filterContainer").style.display = "flex";
   document.getElementById("leaderboardTable").style.display = "none";
 
   loadData();
@@ -91,11 +96,17 @@ function switchTab(tabName) {
   // Xử lý ẩn hiện bảng phù hợp với tab được chọn
   if (tabName === "leaderboard") {
     document.getElementById("mainTable").style.display = "none";
+    document.getElementById("filterContainer").style.display = "none";
     document.getElementById("leaderboardTable").style.display = "table";
     loadLeaderboardData();
   } else {
     document.getElementById("mainTable").style.display = "table";
+    document.getElementById("filterContainer").style.display = "flex";
     document.getElementById("leaderboardTable").style.display = "none";
+    
+    // Reset filters
+    document.getElementById("searchInput").value = "";
+    document.getElementById("statusFilter").value = "all";
     loadData();
   }
 }
@@ -124,137 +135,191 @@ function loadData(showLoading = true) {
 
   apiCall(targetAction)
     .then((data) => {
-      var tbody = document.getElementById("matchBody");
-      tbody.innerHTML = "";
-
-      // Quản lý hiển thị cột Kết quả và Countdown trên thead
-      if (currentTab === "past") {
-        document.getElementById("thResult").style.display    = "table-cell";
-        document.getElementById("thCountdown").style.display = "none";
-      } else {
-        document.getElementById("thResult").style.display    = "none";
-        document.getElementById("thCountdown").style.display = "table-cell";
-      }
-
-      if (data.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 30px; color: #718096;">Không có trận đấu nào trong danh mục này.</td></tr>`;
-        hideLoader();
-        return;
-      }
-
-      data.forEach((row) => {
-        // Sheet columns (0-indexed): [0]=STT, [3]=Thời gian, [4]=Chủ nhà, [5]=Đội khách
-        // [6]=Bàn thắng chủ nhà, [7]=Bàn thắng đội khách, [8]=Trạng thái
-        // [10]=Đội thắng kèo (Cột K), [12]=Cửa trên (Cột M), [13]=Lý do chấp
-        // [16]=lựa chọn của user (pushed by API)
-        var homeTeam  = String(row[4]  || "").trim();
-        var awayTeam  = String(row[5]  || "").trim();
-        var homeScore = row[6] !== "" ? row[6] : "";
-        var awayScore = row[7] !== "" ? row[7] : "";
-        var scoreDisplay = (homeScore !== "" && awayScore !== "") ? ` <span style="color:#e53e3e; font-weight:bold;">${homeScore} - ${awayScore}</span> ` : " vs ";
-        var matchTitle = `${homeTeam}${scoreDisplay}${awayTeam}`;
-
-        var betValue    = String(row[16] || "").trim();
-        var winningTeam = String(row[10] || "").trim();
-        var upperTeam   = String(row[12] || "").trim();
-        var lowerTeam   = upperTeam === homeTeam ? awayTeam : homeTeam;
-
-        // Quy đổi tên đội thắng thành Cửa trên / Cửa dưới
-        var actualWinningChoice = "";
-        if (winningTeam) {
-          actualWinningChoice = winningTeam === upperTeam ? "Cửa trên" : "Cửa dưới";
-        }
-
-        var isDisabled = currentTab === "past" ? "disabled" : "";
-
-        // Kết quả badge (past tab)
-        var resultHtml = "";
-        if (currentTab === "past") {
-          var badgeClass = "status-wait";
-          var badgeText  = "⏳ Chờ KQ";
-          if (actualWinningChoice) {
-            if (betValue === "") {
-              badgeClass = "status-lose";
-              badgeText  = "❌ Không chọn";
-            } else if (actualWinningChoice === betValue) {
-              badgeClass = "status-win";
-              badgeText  = "✅ Thắng";
-            } else {
-              badgeClass = "status-lose";
-              badgeText  = "❌ Thua";
-            }
-          }
-          resultHtml = `<td data-label="Kết quả"><span class="status-badge ${badgeClass}">${badgeText}</span></td>`;
-        }
-
-        // Feature 1: Countdown td (chỉ active tab)
-        var countdownHtml = currentTab === "active"
-          ? `<td class="countdown-cell" data-label="Còn lại" id="cd-${row[0]}">⏱...</td>`
-          : "";
-
-        // Feature 4: Highlight trận chưa chọn (chỉ active tab, bỏ trống betValue)
-        var unbetClass = (currentTab === "active" && betValue === "") ? "row-unbet" : "";
-        var unbetIcon  = (currentTab === "active" && betValue === "")
-          ? ` <span class="unbet-icon" title="Bạn chưa chọn kèo!">&#x26A0;&#xFE0F;</span>`
-          : "";
-
-        // Feature 8: Clickable row cho past tab + cache data
-        var trAttrs;
-        if (currentTab === "past") {
-          matchDataCache[row[0]] = row;
-          trAttrs = `class="clickable-row" onclick="openMatchDetail(${row[0]})"`;
-        } else {
-          trAttrs = unbetClass ? `class="${unbetClass}"` : "";
-        }
-
-        tbody.innerHTML += `
-          <tr ${trAttrs}>
-            <td data-label="STT">${row[0]}</td>
-            <td data-label="Thời gian">${row[3]}</td>
-            <td data-label="Trận đấu">${matchTitle}${unbetIcon}</td>
-            <td data-label="Cửa trên">${upperTeam}</td>
-            <td data-label="Chấp">${row[13]}</td>
-            ${countdownHtml}
-            <td data-label="Chọn Cửa trên">
-              <button
-                class="btn ${betValue === "Cửa trên" ? "selected" : ""}"
-                ${isDisabled}
-                id="btn-u-${row[0]}"
-                onclick="bet(this, ${row[0]}, 'Cửa trên')">
-                &#x25B2; ${upperTeam}
-              </button>
-            </td>
-            <td data-label="Chọn Cửa dưới">
-              <button
-                class="btn ${betValue === "Cửa dưới" ? "selected" : ""}"
-                ${isDisabled}
-                id="btn-d-${row[0]}"
-                onclick="bet(this, ${row[0]}, 'Cửa dưới')">
-                &#x25BC; ${lowerTeam}
-              </button>
-            </td>
-            ${resultHtml}
-          </tr>
-        `;
-      });
-
-      // Feature 1: Khởi động countdown cho tất cả trận active sau khi render xong
-      if (currentTab === "active") {
-        data.forEach((row) => {
-          var tdEl = document.getElementById("cd-" + row[0]);
-          if (!tdEl) return;
-          var btnU = document.getElementById("btn-u-" + row[0]);
-          var btnD = document.getElementById("btn-d-" + row[0]);
-          startCountdown(row[0], row[3], [btnU, btnD].filter(Boolean), tdEl);
-        });
-      }
-
+      currentMatchesData = data;
+      renderMatches();
       hideLoader(); // Tắt loader khi render xong
     })
     .catch((err) => {
       console.error(err);
       hideLoader(); // Tắt loader khi có lỗi
     });
+}
+
+function applyFilters() {
+  renderMatches();
+}
+
+function renderMatches() {
+  var tbody = document.getElementById("matchBody");
+  tbody.innerHTML = "";
+  
+  clearAllCountdowns(); // Xóa countdown cũ trước khi render lại
+  matchDataCache = {};  // Reset cache trận đấu để build lại
+
+  // Quản lý hiển thị cột Kết quả và Countdown trên thead
+  if (currentTab === "past") {
+    document.getElementById("thResult").style.display    = "table-cell";
+    document.getElementById("thCountdown").style.display = "none";
+  } else {
+    document.getElementById("thResult").style.display    = "none";
+    document.getElementById("thCountdown").style.display = "table-cell";
+  }
+
+  // Lấy giá trị filter
+  var searchTerm = (document.getElementById("searchInput").value || "").toLowerCase().trim();
+  var statusFilter = document.getElementById("statusFilter").value || "all";
+
+  // Lọc dữ liệu
+  var filteredData = currentMatchesData.filter(row => {
+    var homeTeam  = String(row[4]  || "").trim();
+    var awayTeam  = String(row[5]  || "").trim();
+    var betValue    = String(row[16] || "").trim();
+    var winningTeam = String(row[10] || "").trim();
+    var upperTeam   = String(row[12] || "").trim();
+    
+    // 1. Lọc theo search (Tên đội)
+    if (searchTerm !== "") {
+      if (!homeTeam.toLowerCase().includes(searchTerm) && !awayTeam.toLowerCase().includes(searchTerm)) {
+        return false;
+      }
+    }
+
+    // 2. Lọc theo trạng thái
+    if (statusFilter !== "all") {
+      var actualWinningChoice = "";
+      if (winningTeam) {
+        actualWinningChoice = winningTeam === upperTeam ? "Cửa trên" : "Cửa dưới";
+      }
+
+      if (statusFilter === "unbet") {
+        if (betValue !== "") return false;
+      } else if (statusFilter === "bet") {
+        if (betValue === "") return false;
+      } else if (statusFilter === "win") {
+        if (currentTab !== "past" || betValue === "" || actualWinningChoice !== betValue) return false;
+      } else if (statusFilter === "lose") {
+        // Có chọn nhưng khác kết quả
+        if (currentTab !== "past" || betValue === "" || actualWinningChoice === betValue || !actualWinningChoice) return false;
+      } else if (statusFilter === "wait") {
+        // Past match nhưng chưa có kết quả
+        if (currentTab !== "past" || actualWinningChoice !== "") return false;
+      }
+    }
+
+    return true;
+  });
+
+  if (filteredData.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 30px; color: #718096;">Không có trận đấu nào phù hợp với bộ lọc.</td></tr>`;
+    return;
+  }
+
+  filteredData.forEach((row) => {
+    // Sheet columns (0-indexed): [0]=STT, [3]=Thời gian, [4]=Chủ nhà, [5]=Đội khách
+    // [6]=Bàn thắng chủ nhà, [7]=Bàn thắng đội khách, [8]=Trạng thái
+    // [10]=Đội thắng kèo (Cột K), [12]=Cửa trên (Cột M), [13]=Lý do chấp
+    // [16]=lựa chọn của user (pushed by API)
+    var homeTeam  = String(row[4]  || "").trim();
+    var awayTeam  = String(row[5]  || "").trim();
+    var homeScore = row[6] !== "" ? row[6] : "";
+    var awayScore = row[7] !== "" ? row[7] : "";
+    var scoreDisplay = (homeScore !== "" && awayScore !== "") ? ` <span style="color:#e53e3e; font-weight:bold;">${homeScore} - ${awayScore}</span> ` : " vs ";
+    var matchTitle = `${homeTeam}${scoreDisplay}${awayTeam}`;
+
+    var betValue    = String(row[16] || "").trim();
+    var winningTeam = String(row[10] || "").trim();
+    var upperTeam   = String(row[12] || "").trim();
+    var lowerTeam   = upperTeam === homeTeam ? awayTeam : homeTeam;
+
+    // Quy đổi tên đội thắng thành Cửa trên / Cửa dưới
+    var actualWinningChoice = "";
+    if (winningTeam) {
+      actualWinningChoice = winningTeam === upperTeam ? "Cửa trên" : "Cửa dưới";
+    }
+
+    var isDisabled = currentTab === "past" ? "disabled" : "";
+
+    // Kết quả badge (past tab)
+    var resultHtml = "";
+    if (currentTab === "past") {
+      var badgeClass = "status-wait";
+      var badgeText  = "⏳ Chờ KQ";
+      if (actualWinningChoice) {
+        if (betValue === "") {
+          badgeClass = "status-lose";
+          badgeText  = "❌ Không chọn";
+        } else if (actualWinningChoice === betValue) {
+          badgeClass = "status-win";
+          badgeText  = "✅ Thắng";
+        } else {
+          badgeClass = "status-lose";
+          badgeText  = "❌ Thua";
+        }
+      }
+      resultHtml = `<td data-label="Kết quả"><span class="status-badge ${badgeClass}">${badgeText}</span></td>`;
+    }
+
+    // Feature 1: Countdown td (chỉ active tab)
+    var countdownHtml = currentTab === "active"
+      ? `<td class="countdown-cell" data-label="Còn lại" id="cd-${row[0]}">⏱...</td>`
+      : "";
+
+    // Feature 4: Highlight trận chưa chọn (chỉ active tab, bỏ trống betValue)
+    var unbetClass = (currentTab === "active" && betValue === "") ? "row-unbet" : "";
+    var unbetIcon  = (currentTab === "active" && betValue === "")
+      ? ` <span class="unbet-icon" title="Bạn chưa chọn kèo!">&#x26A0;&#xFE0F;</span>`
+      : "";
+
+    // Feature 8: Clickable row cho past tab + cache data
+    var trAttrs;
+    if (currentTab === "past") {
+      matchDataCache[row[0]] = row;
+      trAttrs = `class="clickable-row" onclick="openMatchDetail(${row[0]})"`;
+    } else {
+      trAttrs = unbetClass ? `class="${unbetClass}"` : "";
+    }
+
+    tbody.innerHTML += `
+      <tr ${trAttrs}>
+        <td data-label="STT">${row[0]}</td>
+        <td data-label="Thời gian">${row[3]}</td>
+        <td data-label="Trận đấu">${matchTitle}${unbetIcon}</td>
+        <td data-label="Cửa trên">${upperTeam}</td>
+        <td data-label="Chấp">${row[13]}</td>
+        ${countdownHtml}
+        <td data-label="Chọn Cửa trên">
+          <button
+            class="btn ${betValue === "Cửa trên" ? "selected" : ""}"
+            ${isDisabled}
+            id="btn-u-${row[0]}"
+            onclick="bet(this, ${row[0]}, 'Cửa trên')">
+            &#x25B2; ${upperTeam}
+          </button>
+        </td>
+        <td data-label="Chọn Cửa dưới">
+          <button
+            class="btn ${betValue === "Cửa dưới" ? "selected" : ""}"
+            ${isDisabled}
+            id="btn-d-${row[0]}"
+            onclick="bet(this, ${row[0]}, 'Cửa dưới')">
+            &#x25BC; ${lowerTeam}
+          </button>
+        </td>
+        ${resultHtml}
+      </tr>
+    `;
+  });
+
+  // Feature 1: Khởi động countdown cho tất cả trận active sau khi render xong
+  if (currentTab === "active") {
+    filteredData.forEach((row) => {
+      var tdEl = document.getElementById("cd-" + row[0]);
+      if (!tdEl) return;
+      var btnU = document.getElementById("btn-u-" + row[0]);
+      var btnD = document.getElementById("btn-d-" + row[0]);
+      startCountdown(row[0], row[3], [btnU, btnD].filter(Boolean), tdEl);
+    });
+  }
 }
 
 // THÊM MỚI HÀM ĐỔ DỮ LIỆU BẢNG VÀNG
