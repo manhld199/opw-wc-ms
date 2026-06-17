@@ -133,16 +133,20 @@ function loadData(showLoading = true) {
       }
 
       data.forEach((row) => {
-        var homeScore = row[6] !== "" ? row[6] : "";
-        var awayScore = row[7] !== "" ? row[7] : "";
+        // Sheet columns (0-indexed): [0]=STT, [1]=Thời gian, [2]=trống, [3]=Chủ nhà, [4]=Đội khách
+        // [5]=Bàn thắng chủ nhà, [6]=Bàn thắng đội khách, [7]=trống, [8]=Trạng thái
+        // [9]=Hiệu số, [10]=Đội thắng kèo, [11]=Tổ chức, [12]=Cửa trên, [13]=Lý do chấp
+        // [14]=Lần cập nhật, [16]=lựa chọn của user (pushed by API)
+        var homeTeam = String(row[3] || "").trim();  // Cột D: Đội chủ nhà
+        var awayTeam = String(row[4] || "").trim();  // Cột E: Đội khách
+        var homeScore = row[5] !== "" ? row[5] : ""; // Cột F: Bàn thắng chủ nhà
+        var awayScore = row[6] !== "" ? row[6] : ""; // Cột G: Bàn thắng đội khách
         var scoreDisplay = (homeScore !== "" && awayScore !== "") ? ` <span style="color:#e53e3e; font-weight:bold;">${homeScore} - ${awayScore}</span> ` : " vs ";
-        var matchTitle = `${row[4]}${scoreDisplay}${row[5]}`;
+        var matchTitle = `${homeTeam}${scoreDisplay}${awayTeam}`;
 
-        var betValue = String(row[16] || "").trim(); // Lựa chọn của user ("Cửa trên" hoặc "Cửa dưới")
-        var winningTeam = String(row[10] || "").trim(); // Tên đội thắng kèo (Cột K)
-        var upperTeam = String(row[12] || "").trim(); // Tên đội cửa trên (Cột M)
-        var homeTeam = String(row[4] || "").trim();
-        var awayTeam = String(row[5] || "").trim();
+        var betValue = String(row[16] || "").trim();   // Lựa chọn của user (pushed bởi API)
+        var winningTeam = String(row[10] || "").trim(); // Cột K: Tên đội thắng kèo
+        var upperTeam = String(row[12] || "").trim();   // Cột M: Đội cửa trên
         var lowerTeam = upperTeam === homeTeam ? awayTeam : homeTeam; // Đội cửa dưới
 
         // Quy đổi tên đội thắng thành Cửa trên / Cửa dưới
@@ -181,9 +185,9 @@ function loadData(showLoading = true) {
         tbody.innerHTML += `
           <tr>
             <td data-label="STT">${row[0]}</td>
-            <td data-label="Thời gian">${row[3]}</td>
+            <td data-label="Thời gian">${row[1]}</td>
             <td data-label="Trận đấu">${matchTitle}</td>
-            <td data-label="Cửa trên">${row[12]}</td>
+            <td data-label="Cửa trên">${upperTeam}</td>
             <td data-label="Chấp">${row[13]}</td>
 
             <td data-label="Chọn Cửa trên">
