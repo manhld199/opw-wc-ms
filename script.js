@@ -235,6 +235,9 @@ function loadLeaderboardData() {
         return;
       }
 
+      // Tự động sort theo hạng tăng dần
+      data.sort((a, b) => Number(a.rank) - Number(b.rank));
+
       data.forEach((player) => {
         // Định dạng hiển thị % từ số thập phân (ví dụ 0.75 -> 75.0%)
         let winRateFormatted =
