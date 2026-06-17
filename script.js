@@ -133,14 +133,14 @@ function loadData(showLoading = true) {
       }
 
       data.forEach((row) => {
-        // Sheet columns (0-indexed): [0]=STT, [1]=Thời gian, [2]=trống, [3]=Chủ nhà, [4]=Đội khách
-        // [5]=Bàn thắng chủ nhà, [6]=Bàn thắng đội khách, [7]=trống, [8]=Trạng thái
-        // [9]=Hiệu số, [10]=Đội thắng kèo, [11]=Tổ chức, [12]=Cửa trên, [13]=Lý do chấp
-        // [14]=Lần cập nhật, [16]=lựa chọn của user (pushed by API)
-        var homeTeam = String(row[3] || "").trim();  // Cột D: Đội chủ nhà
-        var awayTeam = String(row[4] || "").trim();  // Cột E: Đội khách
-        var homeScore = row[5] !== "" ? row[5] : ""; // Cột F: Bàn thắng chủ nhà
-        var awayScore = row[6] !== "" ? row[6] : ""; // Cột G: Bàn thắng đội khách
+        // Sheet columns (0-indexed): [0]=STT, [1]=?, [2]=?, [3]=Thời gian, [4]=Chủ nhà, [5]=Đội khách
+        // [6]=Bàn thắng chủ nhà, [7]=Bàn thắng đội khách, [8]=Trạng thái
+        // [10]=Đội thắng kèo (Cột K), [12]=Cửa trên (Cột M), [13]=Lý do chấp
+        // [16]=lựa chọn của user (pushed by API)
+        var homeTeam = String(row[4] || "").trim();  // Cột E: Đội chủ nhà
+        var awayTeam = String(row[5] || "").trim();  // Cột F: Đội khách
+        var homeScore = row[6] !== "" ? row[6] : ""; // Cột G: Bàn thắng chủ nhà
+        var awayScore = row[7] !== "" ? row[7] : ""; // Cột H: Bàn thắng đội khách
         var scoreDisplay = (homeScore !== "" && awayScore !== "") ? ` <span style="color:#e53e3e; font-weight:bold;">${homeScore} - ${awayScore}</span> ` : " vs ";
         var matchTitle = `${homeTeam}${scoreDisplay}${awayTeam}`;
 
@@ -185,7 +185,7 @@ function loadData(showLoading = true) {
         tbody.innerHTML += `
           <tr>
             <td data-label="STT">${row[0]}</td>
-            <td data-label="Thời gian">${row[1]}</td>
+            <td data-label="Thời gian">${row[3]}</td>
             <td data-label="Trận đấu">${matchTitle}</td>
             <td data-label="Cửa trên">${upperTeam}</td>
             <td data-label="Chấp">${row[13]}</td>
