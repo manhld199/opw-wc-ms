@@ -280,31 +280,38 @@ function renderMatches() {
       ? `<td class="countdown-cell" data-label="Còn lại" id="cd-${row[0]}">⏱...</td>`
       : "";
 
-    // Feature 8: Lưu data vào cache bằng STT để dùng cho modal
-    matchDataCache[row[0]] = row;
+    // Feature 4: Highlight trận chưa chọn (chỉ active tab, bỏ trống betValue)
+    var unbetClass = (currentTab === "active" && betValue === "") ? "row-unbet" : "";
+    var unbetIcon  = (currentTab === "active" && betValue === "")
+      ? ` <span class="unbet-icon" title="Bạn chưa chọn kèo!">&#x26A0;&#xFE0F;</span>`
+      : "";
 
-    var isUnbet = betValue === "" && currentTab === "active" ? "row-unbet" : "";
-    var warnIcon = isUnbet ? '<span class="unbet-icon" title="Bạn chưa chọn trận này!">⚠️</span>' : '';
+    var trAttrs;
+    if (currentTab === "past") {
+      matchDataCache[row[0]] = row;
+      trAttrs = `class="clickable-row" onclick="openMatchDetail(${row[0]})"`;
+    } else {
+      trAttrs = unbetClass ? `class="${unbetClass}"` : "";
+    }
 
     tbody.innerHTML += `
-      <tr class="${isUnbet}" ${currentTab === "past" ? `onclick="openMatchDetail(${row[0]})" class="clickable-row"` : ''}>
-        <td data-label="STT"><b>${row[0]}</b>${warnIcon}</td>
+      <tr ${trAttrs}>
+        <td data-label="STT">${row[0]}</td>
         <td data-label="Thời gian">${timeStr}</td>
-        <td data-label="Trận" class="match-col">
-          <div style="font-weight:700; color:#1e293b;">${homeTeam}</div>
-          <div style="font-size:11px; color:#94a3b8; margin:2px 0;">vs</div>
-          <div style="font-weight:700; color:#1e293b;">${awayTeam}</div>
+        <td data-label="Trận đấu" class="match-col">${matchTitle}${unbetIcon}</td>
+        <td data-label="Cửa trên">${upperTeam}</td>
+        <td data-label="Chấp">${row[13]}</td>
+        ${countdownHtml}
+        <td data-label="Chọn Cửa trên">
+          <button
+            class="btn ${betValue === "Cửa trên" ? "selected" : ""}"
+            ${isDisabled}
+            id="btn-u-${row[0]}"
+            onclick="bet(this, ${row[0]}, 'Cửa trên')">
+            &#x25B2; ${upperTeam}
+          </button>
         </td>
-        <td data-label="Cửa trên / Cửa dưới">
-          <div style="margin-bottom: 5px;">
-            <button
-              class="btn ${betValue === "Cửa trên" ? "selected" : ""}"
-              ${isDisabled}
-              id="btn-u-${row[0]}"
-              onclick="bet(this, ${row[0]}, 'Cửa trên')">
-              &#x25B2; ${upperTeam}
-            </button>
-          </div>
+        <td data-label="Chọn Cửa dưới">
           <button
             class="btn ${betValue === "Cửa dưới" ? "selected" : ""}"
             ${isDisabled}
@@ -313,9 +320,7 @@ function renderMatches() {
             &#x25BC; ${lowerTeam}
           </button>
         </td>
-        <td data-label="Tỷ lệ">${row[13]}</td>
         ${resultHtml}
-        ${countdownHtml}
       </tr>
     `;
   });
