@@ -346,14 +346,14 @@ function renderMatches() {
 function loadLeaderboardData() {
   showLoader();
   var tbody = document.getElementById("leaderboardBody");
-  tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 20px;">⏳ Đang tải bảng điểm...</td></tr>`;
+  tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 20px;">⏳ Đang tải bảng điểm...</td></tr>`;
 
   apiCall("getLeaderboard")
     .then((data) => {
       tbody.innerHTML = "";
 
       if (!data || data.error || data.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 20px; color:#e53e3e;">Không thể tải dữ liệu hoặc bảng trống!</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 20px; color:#e53e3e;">Không thể tải dữ liệu hoặc bảng trống!</td></tr>`;
         hideLoader();
         return;
       }
@@ -400,6 +400,7 @@ function loadLeaderboardData() {
             <td data-label="Trận sai" style="color: #e53e3e; font-weight:600;">${player.loseMatches}</td>
             <td data-label="Tỷ lệ thắng">${winRateFormatted}</td>
             <td data-label="Chuỗi thắng Max">${player.maxWinStreak}</td>
+            <td data-label="Chuỗi thua Max">${player.maxLoseStreak}</td>
           </tr>
         `;
       });
@@ -407,7 +408,7 @@ function loadLeaderboardData() {
     })
     .catch((err) => {
       console.error(err);
-      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 20px; color:#e53e3e;">Có lỗi xảy ra khi kết nối đồng bộ!</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 20px; color:#e53e3e;">Có lỗi xảy ra khi kết nối đồng bộ!</td></tr>`;
       hideLoader();
     });
 }
