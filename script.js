@@ -811,6 +811,27 @@ function closeMatchDetail() {
   }
 }
 
+// Đóng modal khi click ra ngoài vùng nội dung
+document.addEventListener("click", function(event) {
+  var modal = document.getElementById("matchDetailModal");
+  if (modal && modal.classList.contains("show")) {
+    // Nếu click đúng vào phần overlay mờ (chứ không phải nội dung bên trong)
+    if (event.target === modal || event.target.id === "rainContainer") {
+      closeMatchDetail();
+    }
+  }
+});
+
+// Đóng modal khi nhấn phím ESC
+document.addEventListener("keydown", function(event) {
+  if (event.key === "Escape") {
+    var modal = document.getElementById("matchDetailModal");
+    if (modal && modal.classList.contains("show")) {
+      closeMatchDetail();
+    }
+  }
+});
+
 // =====================================================================
 // FEATURE 9: MEME EFFECTS
 // =====================================================================
