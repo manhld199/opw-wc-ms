@@ -40,6 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     loadData();
     loadMyStats(); // Feature 6: load stats card
+    startLiveScoreAutoRefresh();
   }
 });
 
@@ -63,6 +64,7 @@ function handleCredentialResponse(response) {
   loadData();
   showWarningModal();
   loadMyStats(); // Feature 6: load stats card
+  startLiveScoreAutoRefresh();
 }
 
 // GIỮ NGUYÊN HÀM APICALL GỐC DÙNG FORMDATA CỦA BẠN
@@ -239,11 +241,15 @@ function renderMatches() {
     var awayTeam = String(row[5] || "").trim();
     var homeScore = row[6] !== "" ? row[6] : "";
     var awayScore = row[7] !== "" ? row[7] : "";
+    
+    var matchStatus = String(row[8] || "").trim();
+    var liveIndicator = matchStatus === "Đang đá" ? `<span class="live-indicator" title="Đang đá"></span>` : "";
+    
     var scoreDisplay =
       homeScore !== "" && awayScore !== ""
         ? ` <span style="color:#e53e3e; font-weight:bold;">${homeScore} - ${awayScore}</span> `
         : " vs ";
-    var matchTitle = `${homeTeam}${scoreDisplay}${awayTeam}`;
+    var matchTitle = `${homeTeam}${scoreDisplay}${liveIndicator}${awayTeam}`;
 
     var betValue = String(row[16] || "").trim();
     var winningTeam = String(row[10] || "").trim();
@@ -938,4 +944,20 @@ function playMemeSound(type) {
   currentAudio.play().catch(function (e) {
     console.log("Audio play prevented:", e);
   });
+}
+
+// =====================================================================
+// FEATURE 9: LIVE SCORE AUTO REFRESH
+// =====================================================================
+let liveScoreInterval;
+
+function startLiveScoreAutoRefresh() {
+  if (liveScoreInterval) clearInterval(liveScoreInterval);
+  
+  // Refresh data softly every 60 seconds
+  liveScoreInterval = setInterval(() => {
+    if (currentTab === "active") {
+      loadData(false); // pass false to avoid showing the loader
+    }
+  }, 60000);
 }
