@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Display stored info immediately to prevent flashing blank UI
     document.getElementById("userInfo").innerHTML = `
-      <span>⚽ <b>Người chơi:</b> ${savedName || 'Đang tải...'}</span> 
+      <span>⚽ <b>Người chơi:</b> ${savedName || "Đang tải..."}</span> 
       <span style="color: #a0aec0">|</span> 
       <span>📧 <b>Email:</b> ${savedEmail}</span>
       <button class="logout-btn" onclick="logout()">Đăng xuất</button>
@@ -42,7 +42,6 @@ document.addEventListener("DOMContentLoaded", () => {
     loadMyStats(); // Feature 6: load stats card
   }
 });
-
 
 function handleCredentialResponse(response) {
   const payload = JSON.parse(atob(response.credential.split(".")[1]));
@@ -105,7 +104,7 @@ function switchTab(tabName) {
     document.getElementById("mainTable").style.display = "table";
     document.getElementById("filterContainer").style.display = "flex";
     document.getElementById("leaderboardTable").style.display = "none";
-    
+
     // Reset filters
     document.getElementById("searchInput").value = "";
     document.getElementById("statusFilter").value = "all";
@@ -116,7 +115,7 @@ function switchTab(tabName) {
 function loadData(showLoading = true) {
   if (showLoading) showLoader();
   clearAllCountdowns(); // Feature 1: clear tất cả countdown đang chạy
-  matchDataCache = {};   // Feature 8: reset cache trận
+  matchDataCache = {}; // Feature 8: reset cache trận
 
   // Lấy thông tin user
   apiCall("getUserInfo")
@@ -154,16 +153,16 @@ function applyFilters() {
 function renderMatches() {
   var tbody = document.getElementById("matchBody");
   tbody.innerHTML = "";
-  
+
   clearAllCountdowns(); // Xóa countdown cũ trước khi render lại
-  matchDataCache = {};  // Reset cache trận đấu để build lại
+  matchDataCache = {}; // Reset cache trận đấu để build lại
 
   // Quản lý hiển thị cột Kết quả và Countdown trên thead
   if (currentTab === "past") {
-    document.getElementById("thResult").style.display    = "table-cell";
+    document.getElementById("thResult").style.display = "table-cell";
     document.getElementById("thCountdown").style.display = "none";
   } else {
-    document.getElementById("thResult").style.display    = "none";
+    document.getElementById("thResult").style.display = "none";
     document.getElementById("thCountdown").style.display = "table-cell";
   }
 
@@ -172,16 +171,19 @@ function renderMatches() {
   var statusFilter = document.getElementById("statusFilter").value || "all";
 
   // Lọc dữ liệu
-  var filteredData = currentMatchesData.filter(row => {
-    var homeTeam  = String(row[4]  || "").trim();
-    var awayTeam  = String(row[5]  || "").trim();
-    var betValue    = String(row[16] || "").trim();
+  var filteredData = currentMatchesData.filter((row) => {
+    var homeTeam = String(row[4] || "").trim();
+    var awayTeam = String(row[5] || "").trim();
+    var betValue = String(row[16] || "").trim();
     var winningTeam = String(row[10] || "").trim();
-    var upperTeam   = String(row[12] || "").trim();
-    
+    var upperTeam = String(row[12] || "").trim();
+
     // 1. Lọc theo search (Tên đội)
     if (searchTerm !== "") {
-      if (!homeTeam.toLowerCase().includes(searchTerm) && !awayTeam.toLowerCase().includes(searchTerm)) {
+      if (
+        !homeTeam.toLowerCase().includes(searchTerm) &&
+        !awayTeam.toLowerCase().includes(searchTerm)
+      ) {
         return false;
       }
     }
@@ -198,10 +200,17 @@ function renderMatches() {
       } else if (statusFilter === "bet") {
         if (betValue === "") return false;
       } else if (statusFilter === "win") {
-        if (currentTab !== "past" || betValue === "" || actualWinningChoice !== betValue) return false;
+        if (currentTab !== "past" || betValue === "" || actualWinningChoice !== betValue)
+          return false;
       } else if (statusFilter === "lose") {
         // Có chọn nhưng khác kết quả
-        if (currentTab !== "past" || betValue === "" || actualWinningChoice === betValue || !actualWinningChoice) return false;
+        if (
+          currentTab !== "past" ||
+          betValue === "" ||
+          actualWinningChoice === betValue ||
+          !actualWinningChoice
+        )
+          return false;
       } else if (statusFilter === "wait") {
         // Past match nhưng chưa có kết quả
         if (currentTab !== "past" || actualWinningChoice !== "") return false;
@@ -226,17 +235,20 @@ function renderMatches() {
     // [6]=Bàn thắng chủ nhà, [7]=Bàn thắng đội khách, [8]=Trạng thái
     // [10]=Đội thắng kèo (Cột K), [12]=Cửa trên (Cột M), [13]=Lý do chấp
     // [16]=lựa chọn của user (pushed by API)
-    var homeTeam  = String(row[4]  || "").trim();
-    var awayTeam  = String(row[5]  || "").trim();
+    var homeTeam = String(row[4] || "").trim();
+    var awayTeam = String(row[5] || "").trim();
     var homeScore = row[6] !== "" ? row[6] : "";
     var awayScore = row[7] !== "" ? row[7] : "";
-    var scoreDisplay = (homeScore !== "" && awayScore !== "") ? ` <span style="color:#e53e3e; font-weight:bold;">${homeScore} - ${awayScore}</span> ` : " vs ";
+    var scoreDisplay =
+      homeScore !== "" && awayScore !== ""
+        ? ` <span style="color:#e53e3e; font-weight:bold;">${homeScore} - ${awayScore}</span> `
+        : " vs ";
     var matchTitle = `${homeTeam}${scoreDisplay}${awayTeam}`;
 
-    var betValue    = String(row[16] || "").trim();
+    var betValue = String(row[16] || "").trim();
     var winningTeam = String(row[10] || "").trim();
-    var upperTeam   = String(row[12] || "").trim();
-    var lowerTeam   = upperTeam === homeTeam ? awayTeam : homeTeam;
+    var upperTeam = String(row[12] || "").trim();
+    var lowerTeam = upperTeam === homeTeam ? awayTeam : homeTeam;
 
     // Quy đổi tên đội thắng thành Cửa trên / Cửa dưới
     var actualWinningChoice = "";
@@ -250,17 +262,17 @@ function renderMatches() {
     var resultHtml = "";
     if (currentTab === "past") {
       var badgeClass = "status-wait";
-      var badgeText  = "⏳ Chờ KQ";
+      var badgeText = "⏳ Chờ KQ";
       if (actualWinningChoice) {
         if (betValue === "") {
           badgeClass = "status-lose";
-          badgeText  = "❌ Không chọn";
+          badgeText = "❌ Không chọn";
         } else if (actualWinningChoice === betValue) {
           badgeClass = "status-win";
-          badgeText  = "✅ Thắng";
+          badgeText = "✅ Thắng";
         } else {
           badgeClass = "status-lose";
-          badgeText  = "❌ Thua";
+          badgeText = "❌ Thua";
         }
       }
       resultHtml = `<td data-label="Kết quả"><span class="status-badge ${badgeClass}">${badgeText}</span></td>`;
@@ -281,15 +293,17 @@ function renderMatches() {
         });
 
     // Feature 1: Countdown td (chỉ active tab)
-    var countdownHtml = currentTab === "active"
-      ? `<td class="countdown-cell" data-label="Còn lại" id="cd-${row[0]}">⏱...</td>`
-      : "";
+    var countdownHtml =
+      currentTab === "active"
+        ? `<td class="countdown-cell" data-label="Còn lại" id="cd-${row[0]}">⏱...</td>`
+        : "";
 
     // Feature 4: Highlight trận chưa chọn (chỉ active tab, bỏ trống betValue)
-    var unbetClass = (currentTab === "active" && betValue === "") ? "row-unbet" : "";
-    var unbetIcon  = (currentTab === "active" && betValue === "")
-      ? ` <span class="unbet-icon" title="Bạn chưa chọn kèo!">&#x26A0;&#xFE0F;</span>`
-      : "";
+    var unbetClass = currentTab === "active" && betValue === "" ? "row-unbet" : "";
+    var unbetIcon =
+      currentTab === "active" && betValue === ""
+        ? ` <span class="unbet-icon" title="Bạn chưa chọn kèo!">&#x26A0;&#xFE0F;</span>`
+        : "";
 
     var trAttrs;
     if (currentTab === "past") {
@@ -379,7 +393,7 @@ function loadLeaderboardData() {
         let badgesHtml = "";
         if (player.badges && player.badges.length > 0) {
           badgesHtml = '<div class="badges-container">';
-          player.badges.forEach(b => {
+          player.badges.forEach((b) => {
             let bClass = "";
             if (b.includes("Tiên Tri")) bClass = "badge-tien-tri";
             else if (b.includes("Pele")) bClass = "badge-pele";
@@ -388,7 +402,7 @@ function loadLeaderboardData() {
             else if (b.includes("Ngược Dòng")) bClass = "badge-nguoc-dong";
             badgesHtml += `<span class="player-badge ${bClass}">${b}</span>`;
           });
-          badgesHtml += '</div>';
+          badgesHtml += "</div>";
         }
 
         tbody.innerHTML += `
@@ -480,13 +494,12 @@ function logout() {
   window.location.reload();
 }
 
-
 // =====================================================================
 // FEATURE 1: COUNTDOWN TIMER
 // =====================================================================
 
 function clearAllCountdowns() {
-  Object.keys(countdownIntervals).forEach(function(stt) {
+  Object.keys(countdownIntervals).forEach(function (stt) {
     clearInterval(countdownIntervals[stt]);
   });
   countdownIntervals = {};
@@ -505,7 +518,7 @@ function parseMatchTime(timeStr) {
       parseInt(m[2]) - 1,
       parseInt(m[1]),
       parseInt(m[4]),
-      parseInt(m[5])
+      parseInt(m[5]),
     );
   }
 
@@ -521,17 +534,19 @@ function startCountdown(stt, matchTimeStr, buttons, tdEl) {
     return;
   }
 
-  // Khóa cược 1 tiếng trước giờ đá (giống backend validation)
-  var lockTime = new Date(matchTime.getTime() - 60 * 60 * 1000);
+  // Khóa cược 1 phút trước giờ đá
+  var lockTime = new Date(matchTime.getTime() - 1 * 60 * 1000);
 
   function tick() {
-    var now  = new Date();
+    var now = new Date();
     var diff = lockTime - now;
 
     if (diff <= 0) {
       // Hết giờ: khóa nút và hiển thị badge
       tdEl.innerHTML = '<span class="cd-locked">🔒 Đã khóa</span>';
-      buttons.forEach(function(btn) { btn.disabled = true; });
+      buttons.forEach(function (btn) {
+        btn.disabled = true;
+      });
       clearInterval(countdownIntervals[stt]);
       delete countdownIntervals[stt];
       return;
@@ -545,48 +560,46 @@ function startCountdown(stt, matchTimeStr, buttons, tdEl) {
     var display, cls;
     if (h >= 24) {
       var days = Math.floor(h / 24);
-      display = days + 'ngày ' + (h % 24) + 'h';
-      cls = 'cd-safe';
+      display = days + "ngày " + (h % 24) + "h";
+      cls = "cd-safe";
     } else if (h > 0) {
-      display = h + 'h ' + String(mi).padStart(2, '0') + 'm';
-      cls = h >= 3 ? 'cd-safe' : 'cd-warning';
+      display = h + "h " + String(mi).padStart(2, "0") + "m";
+      cls = h >= 3 ? "cd-safe" : "cd-warning";
     } else {
-      display = String(mi).padStart(2, '0') + 'm ' + String(s).padStart(2, '0') + 's';
-      cls = 'cd-urgent';
+      display = String(mi).padStart(2, "0") + "m " + String(s).padStart(2, "0") + "s";
+      cls = "cd-urgent";
     }
 
-    tdEl.innerHTML = '<span class="' + cls + '">⏱ ' + display + '</span>';
+    tdEl.innerHTML = '<span class="' + cls + '">⏱ ' + display + "</span>";
   }
 
   tick(); // Chạy ngay lần đầu
   countdownIntervals[stt] = setInterval(tick, 1000);
 }
 
-
 // =====================================================================
 // FEATURE 5: MANUAL REFRESH BUTTON
 // =====================================================================
 
 function manualRefresh() {
-  var btn = document.getElementById('btnRefresh');
+  var btn = document.getElementById("btnRefresh");
   if (!btn || btn.disabled) return;
 
   btn.disabled = true;
-  btn.classList.add('refreshing');
+  btn.classList.add("refreshing");
 
-  if (currentTab === 'leaderboard') {
+  if (currentTab === "leaderboard") {
     loadLeaderboardData();
   } else {
     loadData(true);
   }
 
   // Cho phép bấm lại sau 2 giây (tránh spam)
-  setTimeout(function() {
+  setTimeout(function () {
     btn.disabled = false;
-    btn.classList.remove('refreshing');
+    btn.classList.remove("refreshing");
   }, 2000);
 }
-
 
 // =====================================================================
 // FEATURE 6: MY STATS CARD
@@ -597,24 +610,25 @@ function loadMyStats() {
   if (!currentName) return;
 
   apiCall("getLeaderboard")
-    .then(function(data) {
+    .then(function (data) {
       if (!data || data.error || !Array.isArray(data)) return;
 
       // Tìm người chơi hiện tại theo tên (khớp với Bảng vàng)
-      var me = data.find(function(p) {
+      var me = data.find(function (p) {
         return String(p.name).trim() === String(currentName).trim();
       });
 
       if (!me) return;
 
-      var winRate = typeof me.winRate === "number"
-        ? (me.winRate * 100).toFixed(0) + "%"
-        : String(me.winRate || "--");
+      var winRate =
+        typeof me.winRate === "number"
+          ? (me.winRate * 100).toFixed(0) + "%"
+          : String(me.winRate || "--");
 
-      document.getElementById("statRank").textContent  = "#" + me.rank;
-      document.getElementById("statWin").textContent   = me.winMatches;
-      document.getElementById("statLose").textContent  = me.loseMatches;
-      document.getElementById("statRate").textContent  = winRate;
+      document.getElementById("statRank").textContent = "#" + me.rank;
+      document.getElementById("statWin").textContent = me.winMatches;
+      document.getElementById("statLose").textContent = me.loseMatches;
+      document.getElementById("statRate").textContent = winRate;
 
       // Hiển thị điểm và tô màu theo dương/âm
       var scoreEl = document.getElementById("statScore");
@@ -627,7 +641,6 @@ function loadMyStats() {
     .catch(console.error);
 }
 
-
 // =====================================================================
 // FEATURE 8: MATCH DETAIL MODAL
 // =====================================================================
@@ -636,24 +649,27 @@ function openMatchDetail(stt) {
   var row = matchDataCache[stt];
   if (!row) return;
 
-  var homeTeam    = String(row[4]  || "").trim();
-  var awayTeam    = String(row[5]  || "").trim();
-  var homeScore   = row[6] !== "" ? row[6] : "";
-  var awayScore   = row[7] !== "" ? row[7] : "";
-  var upperTeam   = String(row[12] || "").trim();
-  var lowerTeam   = upperTeam === homeTeam ? awayTeam : homeTeam;
-  var handicap    = row[13];
-  var betValue    = String(row[16] || "").trim();
+  var homeTeam = String(row[4] || "").trim();
+  var awayTeam = String(row[5] || "").trim();
+  var homeScore = row[6] !== "" ? row[6] : "";
+  var awayScore = row[7] !== "" ? row[7] : "";
+  var upperTeam = String(row[12] || "").trim();
+  var lowerTeam = upperTeam === homeTeam ? awayTeam : homeTeam;
+  var handicap = row[13];
+  var betValue = String(row[16] || "").trim();
   var winningTeam = String(row[10] || "").trim();
 
   var actualWinningChoice = winningTeam
-    ? (winningTeam === upperTeam ? "Cửa trên" : "Cửa dưới")
+    ? winningTeam === upperTeam
+      ? "Cửa trên"
+      : "Cửa dưới"
     : "";
 
   // Tiêu đề modal
-  var scoreStr = (homeScore !== "" && awayScore !== "")
-    ? `<span style="color:#e53e3e;font-weight:800;">${homeScore} – ${awayScore}</span>`
-    : `<span style="color:#718096">vs</span>`;
+  var scoreStr =
+    homeScore !== "" && awayScore !== ""
+      ? `<span style="color:#e53e3e;font-weight:800;">${homeScore} – ${awayScore}</span>`
+      : `<span style="color:#718096">vs</span>`;
   document.getElementById("detailMatchTitle").innerHTML =
     `${homeTeam} &nbsp;${scoreStr}&nbsp; ${awayTeam}`;
 
@@ -669,13 +685,19 @@ function openMatchDetail(stt) {
     myResultBadge = '<span class="status-badge status-lose">❌ Thua</span>';
   }
 
-  var myChoiceLabel = betValue === "Cửa trên" ? "▲ " + upperTeam
-    : betValue === "Cửa dưới" ? "▼ " + lowerTeam
-    : "Chưa chọn";
+  var myChoiceLabel =
+    betValue === "Cửa trên"
+      ? "▲ " + upperTeam
+      : betValue === "Cửa dưới"
+        ? "▼ " + lowerTeam
+        : "Chưa chọn";
 
-  var resultLabel = actualWinningChoice === "Cửa trên" ? "▲ " + upperTeam
-    : actualWinningChoice === "Cửa dưới" ? "▼ " + lowerTeam
-    : "Chưa có";
+  var resultLabel =
+    actualWinningChoice === "Cửa trên"
+      ? "▲ " + upperTeam
+      : actualWinningChoice === "Cửa dưới"
+        ? "▼ " + lowerTeam
+        : "Chưa có";
 
   document.getElementById("detailMatchInfo").innerHTML = `
     <div class="detail-info-grid">
@@ -720,7 +742,7 @@ function openMatchDetail(stt) {
 
   // Gọi API lấy bình chọn của tất cả mọi người
   apiCall("getMatchDetail", { stt: stt })
-    .then(function(votes) {
+    .then(function (votes) {
       if (!votes || votes.error) {
         document.getElementById("detailVotesList").innerHTML =
           '<p style="color:#e53e3e;text-align:center;padding:16px;">Không thể tải dữ liệu bình chọn.</p>';
@@ -728,11 +750,15 @@ function openMatchDetail(stt) {
       }
 
       // Tính tổng hợp
-      var upperCount = votes.filter(function(v) { return v.choice === "Cửa trên"; }).length;
-      var lowerCount = votes.filter(function(v) { return v.choice === "Cửa dưới"; }).length;
+      var upperCount = votes.filter(function (v) {
+        return v.choice === "Cửa trên";
+      }).length;
+      var lowerCount = votes.filter(function (v) {
+        return v.choice === "Cửa dưới";
+      }).length;
       var total = votes.length;
-      var upperPct = total > 0 ? Math.round(upperCount / total * 100) : 0;
-      var lowerPct = total > 0 ? Math.round(lowerCount / total * 100) : 0;
+      var upperPct = total > 0 ? Math.round((upperCount / total) * 100) : 0;
+      var lowerPct = total > 0 ? Math.round((lowerCount / total) * 100) : 0;
 
       // Thanh progress bar tổng hợp
       var summaryHtml = `
@@ -752,33 +778,39 @@ function openMatchDetail(stt) {
 
       // Grid card từng người
       var votesHtml = '<div class="votes-grid">';
-      votes.forEach(function(v) {
+      votes.forEach(function (v) {
         var isCorrect = actualWinningChoice && v.choice === actualWinningChoice;
-        var isWrong   = actualWinningChoice && v.choice && v.choice !== actualWinningChoice;
-        var choiceLabel = v.choice === "Cửa trên" ? "▲ " + upperTeam
-          : v.choice === "Cửa dưới" ? "▼ " + lowerTeam
-          : "—";
-        var choiceClass = v.choice === "Cửa trên" ? "vote-upper"
-          : v.choice === "Cửa dưới" ? "vote-lower"
-          : "vote-none";
+        var isWrong = actualWinningChoice && v.choice && v.choice !== actualWinningChoice;
+        var choiceLabel =
+          v.choice === "Cửa trên"
+            ? "▲ " + upperTeam
+            : v.choice === "Cửa dưới"
+              ? "▼ " + lowerTeam
+              : "—";
+        var choiceClass =
+          v.choice === "Cửa trên"
+            ? "vote-upper"
+            : v.choice === "Cửa dưới"
+              ? "vote-lower"
+              : "vote-none";
         var cardClass = isCorrect ? "vote-card-correct" : isWrong ? "vote-card-wrong" : "";
 
         // Gắn danh hiệu cho từng người chơi
         var userBadgeHtml = "";
-        var cachedUser = leaderboardCache.find(p => p.name === v.name);
+        var cachedUser = leaderboardCache.find((p) => p.name === v.name);
         if (cachedUser && cachedUser.badges && cachedUser.badges.length > 0) {
           userBadgeHtml = '<div class="badges-container" style="margin-top: 4px;">';
-          cachedUser.badges.forEach(b => {
-             let bClass = "";
-             if (b.includes("Tiên Tri")) bClass = "badge-tien-tri";
-             else if (b.includes("Pele")) bClass = "badge-pele";
-             else if (b.includes("Từ Thiện")) bClass = "badge-tu-thien";
-             else if (b.includes("Tâm Linh")) bClass = "badge-tam-linh";
-             else if (b.includes("Ngược Dòng")) bClass = "badge-nguoc-dong";
-             // Chỉ lấy icon emoji để tiết kiệm diện tích thẻ
-             userBadgeHtml += `<span class="player-badge ${bClass}" style="font-size:12px; padding: 1px 4px;" title="${b}">${b.split(' ')[0]}</span>`; 
+          cachedUser.badges.forEach((b) => {
+            let bClass = "";
+            if (b.includes("Tiên Tri")) bClass = "badge-tien-tri";
+            else if (b.includes("Pele")) bClass = "badge-pele";
+            else if (b.includes("Từ Thiện")) bClass = "badge-tu-thien";
+            else if (b.includes("Tâm Linh")) bClass = "badge-tam-linh";
+            else if (b.includes("Ngược Dòng")) bClass = "badge-nguoc-dong";
+            // Chỉ lấy icon emoji để tiết kiệm diện tích thẻ
+            userBadgeHtml += `<span class="player-badge ${bClass}" style="font-size:12px; padding: 1px 4px;" title="${b}">${b.split(" ")[0]}</span>`;
           });
-          userBadgeHtml += '</div>';
+          userBadgeHtml += "</div>";
         }
 
         votesHtml += `
@@ -789,11 +821,11 @@ function openMatchDetail(stt) {
           </div>
         `;
       });
-      votesHtml += '</div>';
+      votesHtml += "</div>";
 
       document.getElementById("detailVotesList").innerHTML = summaryHtml + votesHtml;
     })
-    .catch(function(err) {
+    .catch(function (err) {
       console.error(err);
       document.getElementById("detailVotesList").innerHTML =
         '<p style="color:#e53e3e;text-align:center;padding:16px;">Có lỗi xảy ra khi tải dữ liệu.</p>';
@@ -804,8 +836,8 @@ function closeMatchDetail() {
   var modal = document.getElementById("matchDetailModal");
   if (modal) {
     modal.classList.remove("show");
-    setTimeout(function() { 
-      modal.style.display = "none"; 
+    setTimeout(function () {
+      modal.style.display = "none";
       resetMemeEffects(); // Reset effects when closing
     }, 300);
   }
@@ -843,7 +875,7 @@ function triggerWinEffect() {
       particleCount: 100,
       spread: 70,
       origin: { y: 0.6 },
-      colors: ['#2e7d32', '#4ade80', '#fbbf24']
+      colors: ["#2e7d32", "#4ade80", "#fbbf24"],
     });
   }
   playMemeSound("win");
@@ -852,39 +884,39 @@ function triggerWinEffect() {
 function triggerLoseEffect() {
   var modal = document.getElementById("matchDetailModal");
   modal.classList.add("is-lose");
-  
+
   var rainContainer = document.getElementById("rainContainer");
   rainContainer.style.display = "block";
   rainContainer.innerHTML = "";
-  
+
   // Tạo 20 giọt mưa
   for (var i = 0; i < 20; i++) {
     var drop = document.createElement("div");
     drop.className = "raindrop";
     drop.style.left = Math.random() * 100 + "%";
-    drop.style.animationDuration = (Math.random() * 0.5 + 0.5) + "s";
-    drop.style.animationDelay = (Math.random() * 2) + "s";
+    drop.style.animationDuration = Math.random() * 0.5 + 0.5 + "s";
+    drop.style.animationDelay = Math.random() * 2 + "s";
     rainContainer.appendChild(drop);
   }
-  
+
   playMemeSound("lose");
 }
 
 function resetMemeEffects() {
   var modal = document.getElementById("matchDetailModal");
-  if(modal) modal.classList.remove("is-lose");
-  
+  if (modal) modal.classList.remove("is-lose");
+
   var rainContainer = document.getElementById("rainContainer");
-  if(rainContainer) {
+  if (rainContainer) {
     rainContainer.style.display = "none";
     rainContainer.innerHTML = "";
   }
-  
+
   var soundToggle = document.getElementById("soundToggle");
-  if(soundToggle) {
+  if (soundToggle) {
     soundToggle.style.display = "none";
   }
-  
+
   if (currentAudio) {
     currentAudio.pause();
     currentAudio = null;
@@ -896,12 +928,14 @@ function playMemeSound(type) {
     currentAudio.pause();
     currentAudio = null;
   }
-  
-  var src = type === "win" 
-    ? "https://www.myinstants.com/media/sounds/crowd-cheering.mp3" 
-    : "https://www.myinstants.com/media/sounds/sad-violin.mp3";
-    
-  currentAudio = new Audio(src);
-  currentAudio.play().catch(function(e) { console.log("Audio play prevented:", e); });
-}
 
+  var src =
+    type === "win"
+      ? "https://www.myinstants.com/media/sounds/crowd-cheering.mp3"
+      : "https://www.myinstants.com/media/sounds/sad-violin.mp3";
+
+  currentAudio = new Audio(src);
+  currentAudio.play().catch(function (e) {
+    console.log("Audio play prevented:", e);
+  });
+}
