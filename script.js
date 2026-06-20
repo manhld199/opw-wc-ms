@@ -193,7 +193,8 @@ function renderMatches() {
     // 2. Lọc theo trạng thái
     if (statusFilter !== "all") {
       var actualWinningChoice = "";
-      if (winningTeam) {
+      var matchStatusFilter = String(row[8] || "").trim();
+      if (winningTeam && matchStatusFilter.includes("Kết thúc")) {
         actualWinningChoice = winningTeam === upperTeam ? "Cửa trên" : "Cửa dưới";
       }
 
@@ -258,7 +259,7 @@ function renderMatches() {
 
     // Quy đổi tên đội thắng thành Cửa trên / Cửa dưới
     var actualWinningChoice = "";
-    if (winningTeam) {
+    if (winningTeam && matchStatus.includes("Kết thúc")) {
       actualWinningChoice = winningTeam === upperTeam ? "Cửa trên" : "Cửa dưới";
     }
 
@@ -268,7 +269,7 @@ function renderMatches() {
     var resultHtml = "";
     if (currentTab === "past") {
       var badgeClass = "status-wait";
-      var badgeText = "⏳ Chờ KQ";
+      var badgeText = matchStatus === "Đang đá" ? "⏳ Đang đá" : "⏳ Chờ KQ";
       if (actualWinningChoice) {
         if (betValue === "") {
           badgeClass = "status-lose";
@@ -665,7 +666,8 @@ function openMatchDetail(stt) {
   var betValue = String(row[16] || "").trim();
   var winningTeam = String(row[10] || "").trim();
 
-  var actualWinningChoice = winningTeam
+  var matchStatusDetail = String(row[8] || "").trim();
+  var actualWinningChoice = (winningTeam && matchStatusDetail.includes("Kết thúc"))
     ? winningTeam === upperTeam
       ? "Cửa trên"
       : "Cửa dưới"
