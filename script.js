@@ -7,9 +7,9 @@ let currentTab = "active"; // Các trạng thái: "active", "past", hoặc "lead
 // Mảng lưu trữ dữ liệu các trận đấu đang được chọn (để phục vụ search/filter)
 let currentMatchesData = [];
 
-// Feature 1: Countdown intervals tracker (stt -> intervalId)
+// Countdown intervals tracker (stt -> intervalId)
 var countdownIntervals = {};
-// Feature 8: Match data cache for detail modal (stt -> rowArray)
+// Match data cache for detail modal (stt -> rowArray)
 var matchDataCache = {};
 // Cache for leaderboard badges
 var leaderboardCache = [];
@@ -23,10 +23,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Display stored info immediately to prevent flashing blank UI
     document.getElementById("userInfo").innerHTML = `
-      <span>⚽ <b>Người chơi:</b> ${savedName || "Đang tải..."}</span> 
-      <span style="color: #a0aec0">|</span> 
-      <span>📧 <b>Email:</b> ${savedEmail}</span>
-      <button class="logout-btn" onclick="logout()">Đăng xuất</button>
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center">
+          <i class="ti ti-user text-2xl text-[#0F5132]"></i>
+        </div>
+        <div>
+          <p class="text-xs font-medium text-gray-400">Welcome back,</p>
+          <h2 class="text-base font-bold">${savedName || "Đang tải..."}</h2>
+        </div>
+      </div>
+      <div class="flex items-center gap-6 mt-4 md:mt-0">
+        <div class="text-right hidden sm:block">
+          <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Email Account</p>
+          <p class="text-sm font-medium text-gray-700">${savedEmail}</p>
+        </div>
+        <button class="px-4 py-2 border border-red-100 text-red-500 bg-red-50/30 rounded-xl text-xs font-bold hover:bg-red-50 transition-colors" onclick="logout()">
+          Đăng xuất
+        </button>
+      </div>
     `;
 
     document.getElementById("loginSectionWrapper").style.display = "none";
@@ -34,12 +48,11 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("tabContainer").style.display = "flex";
 
     // Mặc định ban đầu hiển thị bảng trận đấu
-    document.getElementById("mainTable").style.display = "table";
-    document.getElementById("filterContainer").style.display = "flex";
+    document.getElementById("mainTable").style.display = "block";
     document.getElementById("leaderboardTable").style.display = "none";
 
     loadData();
-    loadMyStats(); // Feature 6: load stats card
+    loadMyStats(); // load stats card
     startLiveScoreAutoRefresh();
   }
 });
@@ -57,17 +70,15 @@ function handleCredentialResponse(response) {
   document.getElementById("tabContainer").style.display = "flex";
 
   // Mặc định ban đầu hiển thị bảng trận đấu
-  document.getElementById("mainTable").style.display = "table";
-  document.getElementById("filterContainer").style.display = "flex";
+  document.getElementById("mainTable").style.display = "block";
   document.getElementById("leaderboardTable").style.display = "none";
 
   loadData();
   showWarningModal();
-  loadMyStats(); // Feature 6: load stats card
+  loadMyStats(); // load stats card
   startLiveScoreAutoRefresh();
 }
 
-// GIỮ NGUYÊN HÀM APICALL GỐC DÙNG FORMDATA CỦA BẠN
 async function apiCall(action, params = {}) {
   const formData = new URLSearchParams();
 
@@ -92,19 +103,26 @@ function switchTab(tabName) {
   currentTab = tabName;
 
   // Cập nhật trạng thái active UI của nút tab
-  document.getElementById("btnActiveMatches").classList.toggle("active", tabName === "active");
-  document.getElementById("btnPastMatches").classList.toggle("active", tabName === "past");
-  document.getElementById("btnLeaderboard").classList.toggle("active", tabName === "leaderboard");
+  const btnActive = document.getElementById("btnActiveMatches");
+  const btnPast = document.getElementById("btnPastMatches");
+  const btnLeader = document.getElementById("btnLeaderboard");
+
+  btnActive.className = "pb-3 px-1 text-sm whitespace-nowrap transition-all " + 
+    (tabName === 'active' ? "font-bold text-[#0F5132] border-b-4 border-[#0F5132]" : "font-semibold text-gray-400 hover:text-gray-600");
+    
+  btnPast.className = "pb-3 px-1 text-sm whitespace-nowrap transition-all " + 
+    (tabName === 'past' ? "font-bold text-[#0F5132] border-b-4 border-[#0F5132]" : "font-semibold text-gray-400 hover:text-gray-600");
+    
+  btnLeader.className = "pb-3 px-1 text-sm whitespace-nowrap transition-all " + 
+    (tabName === 'leaderboard' ? "font-bold text-[#0F5132] border-b-4 border-[#0F5132]" : "font-semibold text-gray-400 hover:text-gray-600");
 
   // Xử lý ẩn hiện bảng phù hợp với tab được chọn
   if (tabName === "leaderboard") {
     document.getElementById("mainTable").style.display = "none";
-    document.getElementById("filterContainer").style.display = "none";
-    document.getElementById("leaderboardTable").style.display = "table";
+    document.getElementById("leaderboardTable").style.display = "block";
     loadLeaderboardData();
   } else {
-    document.getElementById("mainTable").style.display = "table";
-    document.getElementById("filterContainer").style.display = "flex";
+    document.getElementById("mainTable").style.display = "block";
     document.getElementById("leaderboardTable").style.display = "none";
 
     // Reset filters
@@ -116,8 +134,8 @@ function switchTab(tabName) {
 
 function loadData(showLoading = true) {
   if (showLoading) showLoader();
-  clearAllCountdowns(); // Feature 1: clear tất cả countdown đang chạy
-  matchDataCache = {}; // Feature 8: reset cache trận
+  clearAllCountdowns(); // clear tất cả countdown đang chạy
+  matchDataCache = {}; // reset cache trận
 
   // Lấy thông tin user
   apiCall("getUserInfo")
@@ -125,10 +143,24 @@ function loadData(showLoading = true) {
       // Sync names to localstorage in case it changed
       localStorage.setItem("currentUserName", user.name || "");
       document.getElementById("userInfo").innerHTML = `
-        <span>⚽ <b>Người chơi:</b> ${user.name}</span> 
-        <span style="color: #a0aec0">|</span> 
-        <span>📧 <b>Email:</b> ${user.email}</span>
-        <button class="logout-btn" onclick="logout()">&#x0110;ăng xuất</button>
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center">
+            <i class="ti ti-user text-2xl text-[#0F5132]"></i>
+          </div>
+          <div>
+            <p class="text-xs font-medium text-gray-400">Welcome back,</p>
+            <h2 class="text-base font-bold">${user.name}</h2>
+          </div>
+        </div>
+        <div class="flex items-center gap-6 mt-4 md:mt-0">
+          <div class="text-right hidden sm:block">
+            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Email Account</p>
+            <p class="text-sm font-medium text-gray-700">${user.email}</p>
+          </div>
+          <button class="px-4 py-2 border border-red-100 text-red-500 bg-red-50/30 rounded-xl text-xs font-bold hover:bg-red-50 transition-colors" onclick="logout()">
+            Đăng xuất
+          </button>
+        </div>
       `;
     })
     .catch(console.error);
@@ -159,15 +191,6 @@ function renderMatches() {
   clearAllCountdowns(); // Xóa countdown cũ trước khi render lại
   matchDataCache = {}; // Reset cache trận đấu để build lại
 
-  // Quản lý hiển thị cột Kết quả và Countdown trên thead
-  if (currentTab === "past") {
-    document.getElementById("thResult").style.display = "table-cell";
-    document.getElementById("thCountdown").style.display = "none";
-  } else {
-    document.getElementById("thResult").style.display = "none";
-    document.getElementById("thCountdown").style.display = "table-cell";
-  }
-
   // Lấy giá trị filter
   var searchTerm = (document.getElementById("searchInput").value || "").toLowerCase().trim();
   var statusFilter = document.getElementById("statusFilter").value || "all";
@@ -180,7 +203,7 @@ function renderMatches() {
     var winningTeam = String(row[10] || "").trim();
     var upperTeam = String(row[12] || "").trim();
 
-    // 1. Lọc theo search (Tên đội)
+    // Lọc theo search (Tên đội)
     if (searchTerm !== "") {
       if (
         !homeTeam.toLowerCase().includes(searchTerm) &&
@@ -190,7 +213,7 @@ function renderMatches() {
       }
     }
 
-    // 2. Lọc theo trạng thái
+    // Lọc theo trạng thái
     if (statusFilter !== "all") {
       var actualWinningChoice = "";
       var matchStatusFilter = String(row[8] || "").trim();
@@ -206,7 +229,6 @@ function renderMatches() {
         if (currentTab !== "past" || betValue === "" || actualWinningChoice !== betValue)
           return false;
       } else if (statusFilter === "lose") {
-        // Có chọn nhưng khác kết quả
         if (
           currentTab !== "past" ||
           betValue === "" ||
@@ -215,7 +237,6 @@ function renderMatches() {
         )
           return false;
       } else if (statusFilter === "wait") {
-        // Past match nhưng chưa có kết quả
         if (currentTab !== "past" || actualWinningChoice !== "") return false;
       }
     }
@@ -229,35 +250,31 @@ function renderMatches() {
   }
 
   if (filteredData.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 30px; color: #718096;">Không có trận đấu nào phù hợp với bộ lọc.</td></tr>`;
+    tbody.innerHTML = `<div class="bg-white rounded-2xl p-10 text-center text-gray-500 border border-gray-100 shadow-sm">Không có trận đấu nào phù hợp với bộ lọc.</div>`;
     return;
   }
 
   filteredData.forEach((row) => {
-    // Sheet columns (0-indexed): [0]=STT, [3]=Thời gian, [4]=Chủ nhà, [5]=Đội khách
-    // [6]=Bàn thắng chủ nhà, [7]=Bàn thắng đội khách, [8]=Trạng thái
-    // [10]=Đội thắng kèo (Cột K), [12]=Cửa trên (Cột M), [13]=Lý do chấp
-    // [16]=lựa chọn của user (pushed by API)
     var homeTeam = String(row[4] || "").trim();
     var awayTeam = String(row[5] || "").trim();
     var homeScore = row[6] !== "" ? row[6] : "";
     var awayScore = row[7] !== "" ? row[7] : "";
     
     var matchStatus = String(row[8] || "").trim();
-    var liveIndicator = matchStatus === "Đang đá" ? `<span class="live-indicator" title="Đang đá"></span>` : "";
+    var liveIndicator = matchStatus === "Đang đá" 
+      ? `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-red-50 text-red-600 animate-pulse"><span class="w-1.5 h-1.5 bg-red-600 rounded-full mr-1.5"></span>LIVE</span>` 
+      : "";
     
     var scoreDisplay =
       homeScore !== "" && awayScore !== ""
-        ? ` <span style="color:#e53e3e; font-weight:bold;">${homeScore} - ${awayScore}</span> `
+        ? ` <span class="text-[#e53e3e] font-extrabold mx-1">${homeScore} - ${awayScore}</span> `
         : " vs ";
-    var matchTitle = `${homeTeam}${scoreDisplay}${liveIndicator}${awayTeam}`;
 
     var betValue = String(row[16] || "").trim();
     var winningTeam = String(row[10] || "").trim();
     var upperTeam = String(row[12] || "").trim();
     var lowerTeam = upperTeam === homeTeam ? awayTeam : homeTeam;
 
-    // Quy đổi tên đội thắng thành Cửa trên / Cửa dưới
     var actualWinningChoice = "";
     if (winningTeam && matchStatus.includes("Kết thúc")) {
       actualWinningChoice = winningTeam === upperTeam ? "Cửa trên" : "Cửa dưới";
@@ -267,22 +284,19 @@ function renderMatches() {
 
     // Kết quả badge (past tab)
     var resultHtml = "";
-    if (currentTab === "past") {
-      var badgeClass = "status-wait";
-      var badgeText = matchStatus === "Đang đá" ? "⏳ Đang đá" : "⏳ Chờ KQ";
-      if (actualWinningChoice) {
-        if (betValue === "") {
-          badgeClass = "status-lose";
-          badgeText = "❌ Không chọn";
-        } else if (actualWinningChoice === betValue) {
-          badgeClass = "status-win";
-          badgeText = "✅ Thắng";
-        } else {
-          badgeClass = "status-lose";
-          badgeText = "❌ Thua";
-        }
+    var badgeClass = "status-wait";
+    var badgeText = matchStatus === "Đang đá" ? "⏳ Đang đá" : "⏳ Chờ KQ";
+    if (actualWinningChoice) {
+      if (betValue === "") {
+        badgeClass = "status-lose";
+        badgeText = "❌ Không chọn";
+      } else if (actualWinningChoice === betValue) {
+        badgeClass = "status-win";
+        badgeText = "✅ Thắng";
+      } else {
+        badgeClass = "status-lose";
+        badgeText = "❌ Thua";
       }
-      resultHtml = `<td data-label="Kết quả"><span class="status-badge ${badgeClass}">${badgeText}</span></td>`;
     }
 
     // Định dạng thời gian
@@ -293,65 +307,122 @@ function renderMatches() {
           hour: "2-digit",
           minute: "2-digit",
         }) +
-        " - " +
+        " • " +
         matchTimeObj.toLocaleDateString("vi-VN", {
           day: "2-digit",
           month: "2-digit",
         });
 
-    // Feature 1: Countdown td (chỉ active tab)
-    var countdownHtml =
-      currentTab === "active"
-        ? `<td class="countdown-cell" data-label="Còn lại" id="cd-${row[0]}">⏱...</td>`
-        : "";
-
-    // Feature 4: Highlight trận chưa chọn (chỉ active tab, bỏ trống betValue)
     var unbetClass = currentTab === "active" && betValue === "" ? "row-unbet" : "";
     var unbetIcon =
       currentTab === "active" && betValue === ""
-        ? ` <span class="unbet-icon" title="Bạn chưa chọn kèo!">&#x26A0;&#xFE0F;</span>`
+        ? ` <span class="text-amber-500 font-bold ml-1.5 text-xs animate-pulse" title="Bạn chưa chọn kèo!"><i class="ti ti-alert-triangle"></i></span>`
         : "";
 
-    var trAttrs;
     if (currentTab === "past") {
       matchDataCache[row[0]] = row;
-      trAttrs = `class="clickable-row" onclick="openMatchDetail(${row[0]})"`;
-    } else {
-      trAttrs = unbetClass ? `class="${unbetClass}"` : "";
-    }
+      
+      tbody.innerHTML += `
+        <div onclick="openMatchDetail(${row[0]})" class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden match-card p-6 flex flex-col md:flex-row items-center justify-between gap-6 cursor-pointer hover:bg-emerald-50/10 hover:border-emerald-100 transition-all fade-in-up">
+          <div class="flex flex-col md:flex-row items-center gap-6 flex-1 justify-center md:justify-start">
+            <div class="flex md:flex-col items-center justify-between md:border-r border-gray-100 md:pr-6 md:w-44 text-center w-full md:w-auto">
+              <div>
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Kick-off</p>
+                <p class="text-sm font-bold text-gray-700">${timeStr}</p>
+              </div>
+              <div class="mt-2">
+                <span class="status-badge ${badgeClass} text-[11px] py-1 px-3">${badgeText}</span>
+              </div>
+            </div>
 
-    tbody.innerHTML += `
-      <tr ${trAttrs}>
-        <td data-label="STT">${row[0]}</td>
-        <td data-label="Thời gian">${timeStr}</td>
-        <td data-label="Trận đấu" class="match-col">${matchTitle}${unbetIcon}</td>
-        <td data-label="Cửa trên">${upperTeam}</td>
-        <td data-label="Chấp"><span class="handicap-badge">${row[13]}</span></td>
-        ${countdownHtml}
-        <td data-label="Chọn Cửa trên">
-          <button
-            class="btn ${betValue === "Cửa trên" ? "selected" : ""}"
-            ${isDisabled}
-            id="btn-u-${row[0]}"
-            onclick="bet(this, ${row[0]}, 'Cửa trên')">
-            &#x25B2; ${upperTeam}
-          </button>
-        </td>
-        <td data-label="Chọn Cửa dưới">
-          <button
-            class="btn ${betValue === "Cửa dưới" ? "selected" : ""}"
-            ${isDisabled}
-            id="btn-d-${row[0]}"
-            onclick="bet(this, ${row[0]}, 'Cửa dưới')">
-            &#x25BC; ${lowerTeam}
-          </button>
-        </td>
-        ${resultHtml}
-      </tr>
-    `;
+            <div class="flex items-center gap-8 justify-center flex-1">
+              <div class="text-center md:text-left min-w-[100px]">
+                <h3 class="text-base font-bold text-gray-800">${homeTeam}</h3>
+                <p class="text-[10px] font-bold text-gray-400 mt-0.5 uppercase">CHỦ NHÀ</p>
+              </div>
+              
+              <div class="flex flex-col items-center">
+                <div class="flex items-center gap-2">
+                  <span class="text-2xl font-black text-[#0F5132]">${homeScore !== "" ? homeScore : ""}</span>
+                  <span class="text-gray-300 font-light text-xl">${scoreDisplay}</span>
+                  <span class="text-2xl font-black text-gray-500">${awayScore !== "" ? awayScore : ""}</span>
+                </div>
+                <div class="mt-1.5 px-2.5 py-0.5 bg-yellow-50 text-yellow-700 rounded-lg text-[10px] font-bold border border-yellow-100">
+                  Chấp: ${row[13]}
+                </div>
+              </div>
+
+              <div class="text-center md:text-right min-w-[100px]">
+                <h3 class="text-base font-bold text-gray-800">${awayTeam}</h3>
+                <p class="text-[10px] font-bold text-gray-400 mt-0.5 uppercase">KHÁCH</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex gap-2 w-full md:w-auto">
+            <button class="flex-1 md:w-28 py-2.5 rounded-xl border border-gray-100 text-xs text-gray-400 font-semibold bg-gray-50/50 cursor-not-allowed ${betValue === "Cửa trên" ? "border-emerald-200 bg-emerald-50 text-emerald-700 font-bold" : ""}" disabled>
+              Over
+            </button>
+            <button class="flex-1 md:w-28 py-2.5 rounded-xl border border-gray-100 text-xs text-gray-400 font-semibold bg-gray-50/50 cursor-not-allowed ${betValue === "Cửa dưới" ? "border-emerald-200 bg-emerald-50 text-emerald-700 font-bold" : ""}" disabled>
+              Under
+            </button>
+          </div>
+        </div>
+      `;
+    } else {
+      // Active Matches render
+      tbody.innerHTML += `
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden match-card p-6 flex flex-col md:flex-row items-center justify-between gap-6 fade-in-up ${unbetClass}">
+          <div class="flex flex-col md:flex-row items-center gap-6 flex-1 justify-center md:justify-start">
+            <div class="flex md:flex-col items-center justify-between md:border-r border-gray-100 md:pr-6 md:w-44 text-center w-full md:w-auto">
+              <div>
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Kick-off</p>
+                <p class="text-sm font-bold text-gray-700">${timeStr}</p>
+              </div>
+              <div class="mt-2" id="cd-${row[0]}">
+                ⏱...
+              </div>
+            </div>
+
+            <div class="flex items-center gap-8 justify-center flex-1">
+              <div class="text-center md:text-left min-w-[100px]">
+                <h3 class="text-base font-bold text-gray-800">${homeTeam}</h3>
+                <p class="text-[10px] font-bold text-gray-400 mt-0.5 uppercase">CHỦ NHÀ</p>
+              </div>
+              
+              <div class="flex flex-col items-center">
+                <div class="flex items-center gap-2">
+                  <span class="text-xl font-bold text-gray-800">${homeScore !== "" ? homeScore : ""}</span>
+                  <span class="text-gray-300 font-medium text-sm">vs</span>
+                  <span class="text-xl font-bold text-gray-800">${awayScore !== "" ? awayScore : ""}</span>
+                  ${liveIndicator}
+                </div>
+                <div class="mt-1.5 px-2.5 py-0.5 bg-yellow-50 text-yellow-700 rounded-lg text-[10px] font-bold border border-yellow-100">
+                  Chấp: ${row[13]}
+                </div>
+              </div>
+
+              <div class="text-center md:text-right min-w-[100px]">
+                <h3 class="text-base font-bold text-gray-800">${awayTeam}</h3>
+                <p class="text-[10px] font-bold text-gray-400 mt-0.5 uppercase">KHÁCH</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex gap-2 w-full md:w-auto">
+            <button id="btn-u-${row[0]}" onclick="bet(this, ${row[0]}, 'Cửa trên')" class="flex-1 md:w-32 py-2.5 rounded-xl border-2 border-gray-100 text-gray-600 font-bold text-sm bg-white hover:border-[#0F5132] hover:text-[#0F5132] transition-all btn-choice ${betValue === "Cửa trên" ? "selected" : ""}" ${isDisabled}>
+              ▲ ${upperTeam}
+            </button>
+            <button id="btn-d-${row[0]}" onclick="bet(this, ${row[0]}, 'Cửa dưới')" class="flex-1 md:w-32 py-2.5 rounded-xl border-2 border-gray-100 text-gray-600 font-bold text-sm bg-white hover:border-[#0F5132] hover:text-[#0F5132] transition-all btn-choice ${betValue === "Cửa dưới" ? "selected" : ""}" ${isDisabled}>
+              ▼ ${lowerTeam}
+            </button>
+          </div>
+        </div>
+      `;
+    }
   });
 
-  // Feature 1: Khởi động countdown cho tất cả trận active sau khi render xong
+  // Khởi động countdown cho tất cả trận active sau khi render xong
   if (currentTab === "active") {
     filteredData.forEach((row) => {
       var tdEl = document.getElementById("cd-" + row[0]);
@@ -363,18 +434,17 @@ function renderMatches() {
   }
 }
 
-// THÊM MỚI HÀM ĐỔ DỮ LIỆU BẢNG VÀNG
 function loadLeaderboardData() {
   showLoader();
   var tbody = document.getElementById("leaderboardBody");
-  tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 20px;">⏳ Đang tải bảng điểm...</td></tr>`;
+  tbody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-gray-500">⏳ Đang tải bảng điểm...</td></tr>`;
 
   apiCall("getLeaderboard")
     .then((data) => {
       tbody.innerHTML = "";
 
       if (!data || data.error || data.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 20px; color:#e53e3e;">Không thể tải dữ liệu hoặc bảng trống!</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-red-500 font-semibold">Không thể tải dữ liệu hoặc bảng trống!</td></tr>`;
         hideLoader();
         return;
       }
@@ -385,7 +455,6 @@ function loadLeaderboardData() {
       data.sort((a, b) => Number(a.rank) - Number(b.rank));
 
       data.forEach((player) => {
-        // Định dạng hiển thị % từ số thập phân (ví dụ 0.75 -> 75.0%)
         let winRateFormatted =
           typeof player.winRate === "number"
             ? (player.winRate * 100).toFixed(1) + "%"
@@ -399,7 +468,7 @@ function loadLeaderboardData() {
 
         let badgesHtml = "";
         if (player.badges && player.badges.length > 0) {
-          badgesHtml = '<div class="badges-container">';
+          badgesHtml = '<div class="badges-container mt-1.5">';
           player.badges.forEach((b) => {
             let bClass = "";
             if (b.includes("Tiên Tri")) bClass = "badge-tien-tri";
@@ -413,15 +482,18 @@ function loadLeaderboardData() {
         }
 
         tbody.innerHTML += `
-          <tr class="${highlightClass}">
-            <td data-label="Hạng" class="rank-col"><b>${player.rank}</b></td>
-            <td data-label="Thành viên"><b>${player.name}</b>${badgesHtml}</td>
-            <td data-label="Tổng điểm" class="score-col">${player.totalScore}</td>
-            <td data-label="Trận đúng" style="color: #2e7d32; font-weight:600;">${player.winMatches}</td>
-            <td data-label="Trận sai" style="color: #e53e3e; font-weight:600;">${player.loseMatches}</td>
-            <td data-label="Tỷ lệ thắng">${winRateFormatted}</td>
-            <td data-label="Chuỗi thắng Max">${player.maxWinStreak}</td>
-            <td data-label="Chuỗi thua Max">${player.maxLoseStreak}</td>
+          <tr class="border-b border-gray-100 hover:bg-gray-50/50 transition-all ${highlightClass}">
+            <td class="p-4 font-bold text-gray-700">${player.rank}</td>
+            <td class="p-4">
+              <div class="font-bold text-gray-800">${player.name}</div>
+              ${badgesHtml}
+            </td>
+            <td class="p-4 text-center font-extrabold text-[#0F5132]">${player.totalScore}</td>
+            <td class="p-4 text-center font-bold text-green-600">${player.winMatches}</td>
+            <td class="p-4 text-center font-bold text-red-500">${player.loseMatches}</td>
+            <td class="p-4 text-center font-semibold text-gray-700">${winRateFormatted}</td>
+            <td class="p-4 text-center text-gray-500">${player.maxWinStreak}</td>
+            <td class="p-4 text-center text-gray-500">${player.maxLoseStreak}</td>
           </tr>
         `;
       });
@@ -429,7 +501,7 @@ function loadLeaderboardData() {
     })
     .catch((err) => {
       console.error(err);
-      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 20px; color:#e53e3e;">Có lỗi xảy ra khi kết nối đồng bộ!</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-red-500">Có lỗi xảy ra khi kết nối đồng bộ!</td></tr>`;
       hideLoader();
     });
 }
@@ -443,7 +515,6 @@ function hideLoader() {
 }
 
 function bet(btn, stt, choice) {
-  // Chặn trường hợp kích hoạt cược nhầm khi không ở tab active
   if (currentTab === "past" || currentTab === "leaderboard") return;
 
   const originalText = btn.innerText;
@@ -468,19 +539,16 @@ function showToast(msg) {
   var x = document.getElementById("toast");
 
   x.innerText = msg;
-  x.className = "show";
+  x.className = "fixed bottom-6 left-1/2 -translate-x-1/2 z-50 min-w-[300px] bg-slate-900 text-white text-center rounded-xl p-4 shadow-2xl text-sm font-medium visible opacity-1 show";
 
   setTimeout(() => {
-    x.className = x.className.replace("show", "");
+    x.className = "fixed bottom-6 left-1/2 -translate-x-1/2 z-50 min-w-[300px] bg-slate-900 text-white text-center rounded-xl p-4 shadow-2xl text-sm font-medium invisible opacity-0 transition-all duration-300";
   }, 3000);
 }
 
 function showWarningModal() {
   const modal = document.getElementById("warningModal");
   if (modal) {
-    modal.style.display = "flex";
-    // Force reflow to allow transition to trigger
-    modal.offsetHeight;
     modal.classList.add("show");
   }
 }
@@ -489,9 +557,6 @@ function closeWarningModal() {
   const modal = document.getElementById("warningModal");
   if (modal) {
     modal.classList.remove("show");
-    setTimeout(() => {
-      modal.style.display = "none";
-    }, 300); // Wait for transition fade out (300ms)
   }
 }
 
@@ -500,10 +565,6 @@ function logout() {
   localStorage.removeItem("currentUserName");
   window.location.reload();
 }
-
-// =====================================================================
-// FEATURE 1: COUNTDOWN TIMER
-// =====================================================================
 
 function clearAllCountdowns() {
   Object.keys(countdownIntervals).forEach(function (stt) {
@@ -516,10 +577,8 @@ function parseMatchTime(timeStr) {
   if (!timeStr) return null;
   var s = String(timeStr);
 
-  // Format chính: "DD/MM/YYYY HH:mm" (hiển thị giờ Việt Nam)
   var m = s.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{2})/);
   if (m) {
-    // Khởi tạo theo local time (user ở Việt Nam)
     return new Date(
       parseInt(m[3]),
       parseInt(m[2]) - 1,
@@ -529,7 +588,6 @@ function parseMatchTime(timeStr) {
     );
   }
 
-  // Fallback: thử parse tự động (ISO string từ GAS)
   var d = new Date(timeStr);
   return isNaN(d.getTime()) ? null : d;
 }
@@ -541,7 +599,6 @@ function startCountdown(stt, matchTimeStr, buttons, tdEl) {
     return;
   }
 
-  // Khóa cược 1 phút trước giờ đá
   var lockTime = new Date(matchTime.getTime() - 1 * 60 * 1000);
 
   function tick() {
@@ -549,7 +606,6 @@ function startCountdown(stt, matchTimeStr, buttons, tdEl) {
     var diff = lockTime - now;
 
     if (diff <= 0) {
-      // Hết giờ: khóa nút và hiển thị badge
       tdEl.innerHTML = '<span class="cd-locked">🔒 Đã khóa</span>';
       buttons.forEach(function (btn) {
         btn.disabled = true;
@@ -584,16 +640,13 @@ function startCountdown(stt, matchTimeStr, buttons, tdEl) {
   countdownIntervals[stt] = setInterval(tick, 1000);
 }
 
-// =====================================================================
-// FEATURE 5: MANUAL REFRESH BUTTON
-// =====================================================================
-
 function manualRefresh() {
   var btn = document.getElementById("btnRefresh");
   if (!btn || btn.disabled) return;
 
   btn.disabled = true;
-  btn.classList.add("refreshing");
+  const icon = btn.querySelector('i');
+  if (icon) icon.classList.add("animate-spin");
 
   if (currentTab === "leaderboard") {
     loadLeaderboardData();
@@ -601,16 +654,11 @@ function manualRefresh() {
     loadData(true);
   }
 
-  // Cho phép bấm lại sau 2 giây (tránh spam)
   setTimeout(function () {
     btn.disabled = false;
-    btn.classList.remove("refreshing");
+    if (icon) icon.classList.remove("animate-spin");
   }, 2000);
 }
-
-// =====================================================================
-// FEATURE 6: MY STATS CARD
-// =====================================================================
 
 function loadMyStats() {
   var currentName = localStorage.getItem("currentUserName");
@@ -620,7 +668,6 @@ function loadMyStats() {
     .then(function (data) {
       if (!data || data.error || !Array.isArray(data)) return;
 
-      // Tìm người chơi hiện tại theo tên (khớp với Bảng vàng)
       var me = data.find(function (p) {
         return String(p.name).trim() === String(currentName).trim();
       });
@@ -637,20 +684,15 @@ function loadMyStats() {
       document.getElementById("statLose").textContent = me.loseMatches;
       document.getElementById("statRate").textContent = winRate;
 
-      // Hiển thị điểm và tô màu theo dương/âm
       var scoreEl = document.getElementById("statScore");
       var score = Number(me.totalScore);
       scoreEl.textContent = (score >= 0 ? "+" : "") + score;
-      scoreEl.style.color = score >= 0 ? "#2e7d32" : "#e53e3e";
+      scoreEl.style.color = score >= 0 ? "#0f5132" : "#e53e3e";
 
-      document.getElementById("myStatsCard").style.display = "flex";
+      document.getElementById("myStatsCard").style.display = "block";
     })
     .catch(console.error);
 }
-
-// =====================================================================
-// FEATURE 8: MATCH DETAIL MODAL
-// =====================================================================
 
 function openMatchDetail(stt) {
   var row = matchDataCache[stt];
@@ -673,15 +715,13 @@ function openMatchDetail(stt) {
       : "Cửa dưới"
     : "";
 
-  // Tiêu đề modal
   var scoreStr =
     homeScore !== "" && awayScore !== ""
-      ? `<span style="color:#e53e3e;font-weight:800;">${homeScore} – ${awayScore}</span>`
-      : `<span style="color:#718096">vs</span>`;
+      ? `<span class="text-[#e53e3e] font-extrabold">${homeScore} – ${awayScore}</span>`
+      : `<span class="text-gray-300">vs</span>`;
   document.getElementById("detailMatchTitle").innerHTML =
     `${homeTeam} &nbsp;${scoreStr}&nbsp; ${awayTeam}`;
 
-  // Badge kết quả của bản thân
   var myResultBadge;
   if (!actualWinningChoice) {
     myResultBadge = '<span class="status-badge status-wait">⏳ Chờ KQ</span>';
@@ -708,38 +748,34 @@ function openMatchDetail(stt) {
         : "Chưa có";
 
   document.getElementById("detailMatchInfo").innerHTML = `
-    <div class="detail-info-grid">
-      <div class="detail-info-item">
-        <span class="detail-info-label">Cửa trên</span>
-        <span class="detail-info-value">▲ ${upperTeam}</span>
+    <div class="grid grid-cols-2 gap-3 text-sm">
+      <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
+        <span class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Cửa trên</span>
+        <span class="font-bold text-gray-800">▲ ${upperTeam}</span>
       </div>
-      <div class="detail-info-item">
-        <span class="detail-info-label">Tỷ lệ chấp</span>
-        <span class="detail-info-value handicap-val">${handicap}</span>
+      <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
+        <span class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Tỷ lệ chấp</span>
+        <span class="font-bold text-[#e53e3e]">${handicap}</span>
       </div>
-      <div class="detail-info-item">
-        <span class="detail-info-label">Bạn chọn</span>
-        <span class="detail-info-value">${myChoiceLabel}</span>
+      <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
+        <span class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Bạn chọn</span>
+        <span class="font-bold text-gray-800">${myChoiceLabel}</span>
       </div>
-      <div class="detail-info-item">
-        <span class="detail-info-label">Kết quả kèo</span>
-        <span class="detail-info-value">${resultLabel}</span>
+      <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
+        <span class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Kết quả kèo</span>
+        <span class="font-bold text-gray-800">${resultLabel}</span>
       </div>
     </div>
-    <div class="detail-my-result">${myResultBadge}</div>
+    <div class="flex justify-center mt-4">${myResultBadge}</div>
   `;
 
-  // Reset và hiển thị modal
   resetMemeEffects(); // Reset trước khi show dữ liệu mới
   document.getElementById("detailVotesList").innerHTML =
-    '<div style="text-align:center; padding: 20px; color: #718096;">⏳ Đang tải bình chọn...</div>';
+    '<div class="text-center p-8 text-gray-500">⏳ Đang tải bình chọn...</div>';
 
   var modal = document.getElementById("matchDetailModal");
-  modal.style.display = "flex";
-  modal.offsetHeight; // force reflow
   modal.classList.add("show");
 
-  // Kích hoạt hiệu ứng sau khi modal hiện
   if (betValue && actualWinningChoice) {
     if (betValue === actualWinningChoice) {
       triggerWinEffect();
@@ -748,16 +784,14 @@ function openMatchDetail(stt) {
     }
   }
 
-  // Gọi API lấy bình chọn của tất cả mọi người
   apiCall("getMatchDetail", { stt: stt })
     .then(function (votes) {
       if (!votes || votes.error) {
         document.getElementById("detailVotesList").innerHTML =
-          '<p style="color:#e53e3e;text-align:center;padding:16px;">Không thể tải dữ liệu bình chọn.</p>';
+          '<p class="text-red-500 text-center p-4">Không thể tải dữ liệu bình chọn.</p>';
         return;
       }
 
-      // Tính tổng hợp
       var upperCount = votes.filter(function (v) {
         return v.choice === "Cửa trên";
       }).length;
@@ -768,24 +802,26 @@ function openMatchDetail(stt) {
       var upperPct = total > 0 ? Math.round((upperCount / total) * 100) : 0;
       var lowerPct = total > 0 ? Math.round((lowerCount / total) * 100) : 0;
 
-      // Thanh progress bar tổng hợp
       var summaryHtml = `
-        <div class="vote-summary">
-          <div class="vote-bar-row">
-            <span class="vote-bar-team">▲ ${upperTeam}</span>
-            <div class="vote-bar-track"><div class="vote-bar-fill upper-fill" style="width:${upperPct}%"></div></div>
-            <span class="vote-bar-count">${upperCount} người (${upperPct}%)</span>
+        <div class="bg-gray-50 p-4 rounded-xl border border-gray-100 space-y-3">
+          <div class="flex items-center justify-between text-xs font-bold text-gray-600">
+            <span>▲ ${upperTeam}</span>
+            <span>${upperCount} người (${upperPct}%)</span>
           </div>
-          <div class="vote-bar-row">
-            <span class="vote-bar-team">▼ ${lowerTeam}</span>
-            <div class="vote-bar-track"><div class="vote-bar-fill lower-fill" style="width:${lowerPct}%"></div></div>
-            <span class="vote-bar-count">${lowerCount} người (${lowerPct}%)</span>
+          <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
+            <div class="bg-emerald-600 h-full rounded-full transition-all duration-700" style="width: ${upperPct}%"></div>
+          </div>
+          <div class="flex items-center justify-between text-xs font-bold text-gray-600 pt-1">
+            <span>▼ ${lowerTeam}</span>
+            <span>${lowerCount} người (${lowerPct}%)</span>
+          </div>
+          <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
+            <div class="bg-blue-600 h-full rounded-full transition-all duration-700" style="width: ${lowerPct}%"></div>
           </div>
         </div>
       `;
 
-      // Grid card từng người
-      var votesHtml = '<div class="votes-grid">';
+      var votesHtml = '<div class="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-4">';
       votes.forEach(function (v) {
         var isCorrect = actualWinningChoice && v.choice === actualWinningChoice;
         var isWrong = actualWinningChoice && v.choice && v.choice !== actualWinningChoice;
@@ -797,17 +833,20 @@ function openMatchDetail(stt) {
               : "—";
         var choiceClass =
           v.choice === "Cửa trên"
-            ? "vote-upper"
+            ? "text-emerald-700 bg-emerald-50 border border-emerald-100"
             : v.choice === "Cửa dưới"
-              ? "vote-lower"
-              : "vote-none";
-        var cardClass = isCorrect ? "vote-card-correct" : isWrong ? "vote-card-wrong" : "";
+              ? "text-blue-700 bg-blue-50 border border-blue-100"
+              : "text-gray-400 bg-gray-50 border border-gray-100";
+        var cardClass = isCorrect 
+          ? "border-green-200 bg-green-50/50" 
+          : isWrong 
+            ? "border-red-200 bg-red-50/50" 
+            : "border-gray-100 bg-white";
 
-        // Gắn danh hiệu cho từng người chơi
         var userBadgeHtml = "";
         var cachedUser = leaderboardCache.find((p) => p.name === v.name);
         if (cachedUser && cachedUser.badges && cachedUser.badges.length > 0) {
-          userBadgeHtml = '<div class="badges-container" style="margin-top: 4px;">';
+          userBadgeHtml = '<div class="flex flex-wrap gap-1 mt-1 justify-center">';
           cachedUser.badges.forEach((b) => {
             let bClass = "";
             if (b.includes("Tiên Tri")) bClass = "badge-tien-tri";
@@ -815,17 +854,16 @@ function openMatchDetail(stt) {
             else if (b.includes("Từ Thiện")) bClass = "badge-tu-thien";
             else if (b.includes("Tâm Linh")) bClass = "badge-tam-linh";
             else if (b.includes("Ngược Dòng")) bClass = "badge-nguoc-dong";
-            // Chỉ lấy icon emoji để tiết kiệm diện tích thẻ
-            userBadgeHtml += `<span class="player-badge ${bClass}" style="font-size:12px; padding: 1px 4px;" title="${b}">${b.split(" ")[0]}</span>`;
+            userBadgeHtml += `<span class="player-badge ${bClass} text-[9px] px-1 py-0.5" title="${b}">${b.split(" ")[0]}</span>`;
           });
           userBadgeHtml += "</div>";
         }
 
         votesHtml += `
-          <div class="vote-card ${cardClass}">
-            <div class="vote-name" title="${v.name}">${v.name}</div>
+          <div class="border rounded-xl p-3 text-center transition-all hover:shadow-sm ${cardClass}">
+            <div class="font-bold text-xs text-gray-800 truncate" title="${v.name}">${v.name}</div>
             ${userBadgeHtml}
-            <div class="vote-choice ${choiceClass}" style="margin-top: 4px;">${choiceLabel}</div>
+            <div class="text-[11px] font-bold py-1 px-2 rounded-lg mt-2 inline-block ${choiceClass}">${choiceLabel}</div>
           </div>
         `;
       });
@@ -836,7 +874,7 @@ function openMatchDetail(stt) {
     .catch(function (err) {
       console.error(err);
       document.getElementById("detailVotesList").innerHTML =
-        '<p style="color:#e53e3e;text-align:center;padding:16px;">Có lỗi xảy ra khi tải dữ liệu.</p>';
+        '<p class="text-red-500 text-center p-4">Có lỗi xảy ra khi tải dữ liệu.</p>';
     });
 }
 
@@ -845,7 +883,6 @@ function closeMatchDetail() {
   if (modal) {
     modal.classList.remove("show");
     setTimeout(function () {
-      modal.style.display = "none";
       resetMemeEffects(); // Reset effects when closing
     }, 300);
   }
@@ -855,14 +892,12 @@ function closeMatchDetail() {
 document.addEventListener("click", function(event) {
   var modal = document.getElementById("matchDetailModal");
   if (modal && modal.classList.contains("show")) {
-    // Nếu click đúng vào phần overlay mờ (chứ không phải nội dung bên trong)
     if (event.target === modal || event.target.id === "rainContainer") {
       closeMatchDetail();
     }
   }
 });
 
-// Đóng modal khi nhấn phím ESC
 document.addEventListener("keydown", function(event) {
   if (event.key === "Escape") {
     var modal = document.getElementById("matchDetailModal");
@@ -872,9 +907,6 @@ document.addEventListener("keydown", function(event) {
   }
 });
 
-// =====================================================================
-// FEATURE 9: MEME EFFECTS
-// =====================================================================
 var currentAudio = null;
 
 function triggerWinEffect() {
@@ -883,7 +915,7 @@ function triggerWinEffect() {
       particleCount: 100,
       spread: 70,
       origin: { y: 0.6 },
-      colors: ["#2e7d32", "#4ade80", "#fbbf24"],
+      colors: ["#0F5132", "#4ade80", "#fbbf24"],
     });
   }
   playMemeSound("win");
@@ -897,7 +929,6 @@ function triggerLoseEffect() {
   rainContainer.style.display = "block";
   rainContainer.innerHTML = "";
 
-  // Tạo 20 giọt mưa
   for (var i = 0; i < 20; i++) {
     var drop = document.createElement("div");
     drop.className = "raindrop";
@@ -948,15 +979,11 @@ function playMemeSound(type) {
   });
 }
 
-// =====================================================================
-// FEATURE 9: LIVE SCORE AUTO REFRESH
-// =====================================================================
 let liveScoreInterval;
 
 function startLiveScoreAutoRefresh() {
   if (liveScoreInterval) clearInterval(liveScoreInterval);
   
-  // Refresh data softly every 60 seconds
   liveScoreInterval = setInterval(() => {
     if (currentTab === "active") {
       loadData(false); // pass false to avoid showing the loader
