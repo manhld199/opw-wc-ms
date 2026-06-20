@@ -341,12 +341,11 @@ function renderMatches() {
                 <h3 class="text-base font-bold text-gray-800">${homeTeam}</h3>
                 <p class="text-[10px] font-bold text-gray-400 mt-0.5 uppercase">CHỦ NHÀ</p>
               </div>
-              
               <div class="flex flex-col items-center">
-                <div class="flex items-center gap-2">
-                  <span class="text-2xl font-black text-[#0F5132]">${homeScore !== "" ? homeScore : ""}</span>
-                  <span class="text-gray-300 font-light text-xl">${scoreDisplay}</span>
-                  <span class="text-2xl font-black text-gray-500">${awayScore !== "" ? awayScore : ""}</span>
+                <div class="flex items-center gap-3">
+                  <span class="text-2xl font-black text-gray-800">${homeScore !== "" ? homeScore : ""}</span>
+                  <span class="text-gray-300 font-medium text-lg">${homeScore !== "" && awayScore !== "" ? "-" : "vs"}</span>
+                  <span class="text-2xl font-black text-gray-800">${awayScore !== "" ? awayScore : ""}</span>
                 </div>
                 <div class="mt-1.5 px-2.5 py-0.5 bg-yellow-50 text-yellow-700 rounded-lg text-[10px] font-bold border border-yellow-100">
                   Chấp: ${row[13]}
