@@ -346,6 +346,9 @@ function renderMatches() {
         ? ` <span class="text-amber-500 font-bold ml-1.5 text-xs animate-pulse" title="Bạn chưa chọn kèo!"><i class="ti ti-alert-triangle"></i></span>`
         : "";
 
+    var homeBadge = homeTeam === upperTeam ? ' <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-black bg-amber-50 text-amber-700 border border-amber-200 ml-1.5"><i class="ti ti-star-filled mr-0.5 text-amber-500"></i>KÈO TRÊN</span>' : '';
+    var awayBadge = awayTeam === upperTeam ? ' <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-black bg-amber-50 text-amber-700 border border-amber-200 ml-1.5"><i class="ti ti-star-filled mr-0.5 text-amber-500"></i>KÈO TRÊN</span>' : '';
+
     if (currentTab === "past") {
       matchDataCache[row[0]] = row;
       
@@ -363,8 +366,8 @@ function renderMatches() {
             </div>
 
             <div class="flex items-center gap-8 justify-center flex-1">
-              <div class="text-center md:text-left min-w-[100px]">
-                <h3 class="text-base font-bold text-gray-800">${homeTeam}</h3>
+              <div class="text-center md:text-left min-w-[120px]">
+                <h3 class="text-base font-bold text-gray-800 flex items-center justify-center md:justify-start flex-wrap gap-1">${homeTeam}${homeBadge}</h3>
                 <p class="text-[10px] font-bold text-gray-400 mt-0.5 uppercase">CHỦ NHÀ</p>
               </div>
               <div class="flex flex-col items-center">
@@ -378,8 +381,8 @@ function renderMatches() {
                 </div>
               </div>
 
-              <div class="text-center md:text-right min-w-[100px]">
-                <h3 class="text-base font-bold text-gray-800">${awayTeam}</h3>
+              <div class="text-center md:text-right min-w-[120px]">
+                <h3 class="text-base font-bold text-gray-800 flex items-center justify-center md:justify-end flex-wrap gap-1">${awayBadge}${awayTeam}</h3>
                 <p class="text-[10px] font-bold text-gray-400 mt-0.5 uppercase">KHÁCH</p>
               </div>
             </div>
@@ -411,8 +414,8 @@ function renderMatches() {
             </div>
 
             <div class="flex items-center gap-8 justify-center flex-1">
-              <div class="text-center md:text-left min-w-[100px]">
-                <h3 class="text-base font-bold text-gray-800">${homeTeam}</h3>
+              <div class="text-center md:text-left min-w-[120px]">
+                <h3 class="text-base font-bold text-gray-800 flex items-center justify-center md:justify-start flex-wrap gap-1">${homeTeam}${homeBadge}</h3>
                 <p class="text-[10px] font-bold text-gray-400 mt-0.5 uppercase">CHỦ NHÀ</p>
               </div>
               
@@ -428,8 +431,8 @@ function renderMatches() {
                 </div>
               </div>
 
-              <div class="text-center md:text-right min-w-[100px]">
-                <h3 class="text-base font-bold text-gray-800">${awayTeam}</h3>
+              <div class="text-center md:text-right min-w-[120px]">
+                <h3 class="text-base font-bold text-gray-800 flex items-center justify-center md:justify-end flex-wrap gap-1">${awayBadge}${awayTeam}</h3>
                 <p class="text-[10px] font-bold text-gray-400 mt-0.5 uppercase">KHÁCH</p>
               </div>
             </div>
