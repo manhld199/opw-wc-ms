@@ -174,53 +174,42 @@ function submitBet(email, stt, choice) {
     return "❌ Đã quá thời gian!";
   }
 
-  var matchRegex = choice.match(/⭐(\d+)/);
-  var requestedStar = matchRegex ? parseInt(matchRegex[1]) : null;
+  try {
+    var matchRegex = choice.match(/⭐(\d+)/);
+    var requestedStar = matchRegex ? parseInt(matchRegex[1], 10) : null;
 
-  if (requestedStar) {
-    var availableStars = [20, 30, 40, 50];
-    var userBets = sheetBet.getRange(3, userColNum, 100, 1).getValues();
+    if (requestedStar) {
+      var availableStars = [20, 30, 40, 50];
+      
+      // Khắc phục triệt để lỗi getRange out of bounds bằng getLastRow
+      var maxRow = sheetBet.getLastRow();
+      if (maxRow < 3) maxRow = 3; 
 
-    for (var k = 0; k < userBets.length; k++) {
-      if (k + 3 !== row) {
-        // Don't count existing bet for the current match
-        var betStr = String(userBets[k][0]);
-        var existingMatch = betStr.match(/⭐(\d+)/);
-        if (existingMatch) {
-          var starVal = parseInt(existingMatch[1]);
-          var idx = availableStars.indexOf(starVal);
-          if (idx !== -1) {
-            availableStars.splice(idx, 1);
+      var userBets = sheetBet.getRange(3, userColNum, maxRow - 2, 1).getValues();
+      
+      for (var k = 0; k < userBets.length; k++) {
+        if (k + 3 !== row) { 
+          var betStr = String(userBets[k][0] || "");
+          var existingMatch = betStr.match(/⭐(\d+)/);
+          if (existingMatch && existingMatch[1]) {
+            var starVal = parseInt(existingMatch[1], 10);
+            var idx = availableStars.indexOf(starVal);
+            if (idx !== -1) {
+              availableStars.splice(idx, 1);
+            }
           }
         }
       }
-    }
 
-    if (availableStars.indexOf(requestedStar) === -1) {
-      return "❌ Lỗi: Ngôi sao hy vọng này đã được sử dụng!";
+      if (availableStars.indexOf(requestedStar) === -1) {
+        return "❌ Lỗi: Ngôi sao hy vọng này đã được sử dụng!";
+      }
     }
+  } catch (err) {
+    return "❌ Lỗi Server nội bộ: " + err.toString();
   }
 
   sheetBet.getRange(row, userColNum).setValue(choice);
-
-  // try {
-  //   MailApp.sendEmail(
-  //     email,
-  //     "Thông báo bình chọn: " +
-  //       matchData[4] +
-  //       " vs " +
-  //       matchData[5],
-
-  //     "Xác nhận: " +
-  //       userName +
-  //       ", bạn đã chọn " +
-  //       choice +
-  //       " cho trận " +
-  //       matchData[4] +
-  //       " vs " +
-  //       matchData[5]
-  //   );
-  // } catch (e) {}
 
   return "✅ Đã xác nhận: " + choice;
 }
