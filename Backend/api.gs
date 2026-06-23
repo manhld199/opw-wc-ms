@@ -72,27 +72,30 @@ function getUserInfo(email) {
     }
   }
 
-  var starsRemaining = 5;
+  var availableStars = [20, 30, 40, 50];
   if (colChar !== "") {
     var sheetBet = ss.getSheetByName("Đặt cược");
     if (sheetBet) {
       var colNum = columnLetterToNumber(colChar);
       var userBets = sheetBet.getRange(3, colNum, 100, 1).getValues();
-      var usedStars = 0;
       for (var k = 0; k < userBets.length; k++) {
-        if (String(userBets[k][0]).indexOf("⭐") !== -1) {
-          usedStars++;
+        var betStr = String(userBets[k][0]);
+        var match = betStr.match(/⭐(\d+)/);
+        if (match) {
+          var starVal = parseInt(match[1]);
+          var idx = availableStars.indexOf(starVal);
+          if (idx !== -1) {
+            availableStars.splice(idx, 1);
+          }
         }
       }
-      starsRemaining = 5 - usedStars;
-      if (starsRemaining < 0) starsRemaining = 0;
     }
   }
 
   return {
     name: name,
     email: email,
-    starsRemaining: starsRemaining
+    availableStars: availableStars
   };
 }
 
@@ -202,20 +205,30 @@ function submitBet(email, stt, choice) {
     return "❌ Đã quá thời gian!";
   }
 
-  var isHopeStar = choice.indexOf("⭐") !== -1;
-  var userBets = sheetBet.getRange(3, userColNum, 100, 1).getValues();
-  var usedStars = 0;
-  
-  for (var k = 0; k < userBets.length; k++) {
-    if ((k + 3) !== row) { // Don't count existing bet for the current match
-      if (String(userBets[k][0]).indexOf("⭐") !== -1) {
-        usedStars++;
+  var matchRegex = choice.match(/⭐(\d+)/);
+  var requestedStar = matchRegex ? parseInt(matchRegex[1]) : null;
+
+  if (requestedStar) {
+    var availableStars = [20, 30, 40, 50];
+    var userBets = sheetBet.getRange(3, userColNum, 100, 1).getValues();
+    
+    for (var k = 0; k < userBets.length; k++) {
+      if ((k + 3) !== row) { // Don't count existing bet for the current match
+        var betStr = String(userBets[k][0]);
+        var existingMatch = betStr.match(/⭐(\d+)/);
+        if (existingMatch) {
+          var starVal = parseInt(existingMatch[1]);
+          var idx = availableStars.indexOf(starVal);
+          if (idx !== -1) {
+            availableStars.splice(idx, 1);
+          }
+        }
       }
     }
-  }
 
-  if (isHopeStar && usedStars >= 5) {
-    return "❌ Lỗi: Bạn đã hết Ngôi sao hy vọng!";
+    if (availableStars.indexOf(requestedStar) === -1) {
+      return "❌ Lỗi: Ngôi sao hy vọng này đã được sử dụng!";
+    }
   }
 
   sheetBet

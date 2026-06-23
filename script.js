@@ -3,6 +3,7 @@ const GAS_URL =
 
 let currentUserEmail = "";
 let currentTab = "active"; // Các trạng thái: "active", "past", hoặc "leaderboard"
+let currentAvailableStars = [20, 30, 40, 50];
 
 // Mảng lưu trữ dữ liệu các trận đấu đang được chọn (để phục vụ search/filter)
 let currentMatchesData = [];
@@ -141,6 +142,7 @@ function loadData(showLoading = true) {
   // Lấy thông tin user
   apiCall("getUserInfo")
     .then((user) => {
+      currentAvailableStars = user.availableStars || [20, 30, 40, 50];
       // Sync names to localstorage in case it changed
       localStorage.setItem("currentUserName", user.name || "");
       document.getElementById("userInfo").innerHTML = `
@@ -283,7 +285,11 @@ function renderMatches() {
         ? ` <span class="text-[#e53e3e] font-extrabold mx-1">${homeScore} - ${awayScore}</span> `
         : " vs ";
 
-    var betValue = String(row[16] || "").trim();
+    var betValueRaw = String(row[16] || "").trim();
+    var matchRegex = betValueRaw.match(/⭐(\d+)/);
+    var usedStarOnThisMatch = matchRegex ? parseInt(matchRegex[1]) : null;
+    var hasHopeStar = !!usedStarOnThisMatch;
+    var betValue = betValueRaw.replace(/⭐\d+/, "").trim();
     var winningTeam = String(row[10] || "").trim();
     var upperTeam = String(row[12] || "").trim();
     var lowerTeam = upperTeam === homeTeam ? awayTeam : homeTeam;
@@ -390,10 +396,10 @@ function renderMatches() {
 
           <div class="flex gap-2 w-full md:w-auto">
             <button class="flex-1 md:w-28 py-2.5 rounded-xl border border-gray-100 text-xs text-gray-400 font-semibold bg-gray-50/50 cursor-not-allowed ${betValue === "Cửa trên" ? "border-emerald-200 bg-emerald-50 text-emerald-700 font-bold" : ""}" disabled>
-              ▲ ${upperTeam}
+              ▲ ${upperTeam} ${(betValue === "Cửa trên" && hasHopeStar) ? `⭐${usedStarOnThisMatch}` : ""}
             </button>
             <button class="flex-1 md:w-28 py-2.5 rounded-xl border border-gray-100 text-xs text-gray-400 font-semibold bg-gray-50/50 cursor-not-allowed ${betValue === "Cửa dưới" ? "border-emerald-200 bg-emerald-50 text-emerald-700 font-bold" : ""}" disabled>
-              ▼ ${lowerTeam}
+              ▼ ${lowerTeam} ${(betValue === "Cửa dưới" && hasHopeStar) ? `⭐${usedStarOnThisMatch}` : ""}
             </button>
           </div>
         </div>
@@ -438,13 +444,22 @@ function renderMatches() {
             </div>
           </div>
 
-          <div class="flex gap-2 w-full md:w-auto">
-            <button id="btn-u-${row[0]}" onclick="bet(this, ${row[0]}, 'Cửa trên')" class="flex-1 md:w-32 py-2.5 rounded-xl border-2 border-gray-100 text-gray-600 font-bold text-sm bg-white hover:border-[#0F5132] hover:text-[#0F5132] transition-all btn-choice ${betValue === "Cửa trên" ? "selected" : ""}" ${isDisabled}>
-              ▲ ${upperTeam}
-            </button>
-            <button id="btn-d-${row[0]}" onclick="bet(this, ${row[0]}, 'Cửa dưới')" class="flex-1 md:w-32 py-2.5 rounded-xl border-2 border-gray-100 text-gray-600 font-bold text-sm bg-white hover:border-[#0F5132] hover:text-[#0F5132] transition-all btn-choice ${betValue === "Cửa dưới" ? "selected" : ""}" ${isDisabled}>
-              ▼ ${lowerTeam}
-            </button>
+          <div class="flex flex-col gap-2 w-full md:w-auto items-end">
+            <div class="flex gap-2 w-full md:w-auto">
+              <button id="btn-u-${row[0]}" onclick="bet(this, ${row[0]}, 'Cửa trên')" class="flex-1 md:w-32 py-2.5 rounded-xl border-2 border-gray-100 text-gray-600 font-bold text-sm bg-white hover:border-[#0F5132] hover:text-[#0F5132] transition-all btn-choice ${betValue === "Cửa trên" ? "selected" : ""}" ${isDisabled}>
+                ▲ ${upperTeam}
+              </button>
+              <button id="btn-d-${row[0]}" onclick="bet(this, ${row[0]}, 'Cửa dưới')" class="flex-1 md:w-32 py-2.5 rounded-xl border-2 border-gray-100 text-gray-600 font-bold text-sm bg-white hover:border-[#0F5132] hover:text-[#0F5132] transition-all btn-choice ${betValue === "Cửa dưới" ? "selected" : ""}" ${isDisabled}>
+                ▼ ${lowerTeam}
+              </button>
+            </div>
+            <select id="star-select-${row[0]}" class="text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200 rounded-lg px-3 py-1.5 outline-none cursor-pointer mt-1 hover:bg-amber-100 transition-colors w-full md:w-auto" ${isDisabled}>
+              <option value="">Bình thường (10đ)</option>
+              <option value="20" ${usedStarOnThisMatch === 20 ? 'selected' : (!currentAvailableStars.includes(20) ? 'disabled' : '')}>⭐ 20 điểm ${!currentAvailableStars.includes(20) && usedStarOnThisMatch !== 20 ? '(Đã dùng)' : ''}</option>
+              <option value="30" ${usedStarOnThisMatch === 30 ? 'selected' : (!currentAvailableStars.includes(30) ? 'disabled' : '')}>⭐ 30 điểm ${!currentAvailableStars.includes(30) && usedStarOnThisMatch !== 30 ? '(Đã dùng)' : ''}</option>
+              <option value="40" ${usedStarOnThisMatch === 40 ? 'selected' : (!currentAvailableStars.includes(40) ? 'disabled' : '')}>⭐ 40 điểm ${!currentAvailableStars.includes(40) && usedStarOnThisMatch !== 40 ? '(Đã dùng)' : ''}</option>
+              <option value="50" ${usedStarOnThisMatch === 50 ? 'selected' : (!currentAvailableStars.includes(50) ? 'disabled' : '')}>⭐ 50 điểm ${!currentAvailableStars.includes(50) && usedStarOnThisMatch !== 50 ? '(Đã dùng)' : ''}</option>
+            </select>
           </div>
         </div>
       `;
@@ -545,6 +560,11 @@ function hideLoader() {
 
 function bet(btn, stt, choice) {
   if (currentTab === "past" || currentTab === "leaderboard") return;
+
+  var starSelect = document.getElementById("star-select-" + stt);
+  if (starSelect && starSelect.value) {
+    choice += " ⭐" + starSelect.value;
+  }
 
   const originalText = btn.innerText;
   btn.innerText = "⏳...";
@@ -734,7 +754,11 @@ function openMatchDetail(stt) {
   var upperTeam = String(row[12] || "").trim();
   var lowerTeam = upperTeam === homeTeam ? awayTeam : homeTeam;
   var handicap = row[13];
-  var betValue = String(row[16] || "").trim();
+  var betValueRaw = String(row[16] || "").trim();
+  var matchRegexDetail = betValueRaw.match(/⭐(\d+)/);
+  var usedStarOnThisMatch = matchRegexDetail ? parseInt(matchRegexDetail[1]) : null;
+  var hasHopeStar = !!usedStarOnThisMatch;
+  var betValue = betValueRaw.replace(/⭐\d+/, "").trim();
   var winningTeam = String(row[10] || "").trim();
 
   var matchStatusDetail = String(row[8] || "").trim();
@@ -776,9 +800,9 @@ function openMatchDetail(stt) {
 
   var myChoiceLabel =
     betValue === "Cửa trên"
-      ? "▲ " + upperTeam
+      ? "▲ " + upperTeam + (hasHopeStar ? ` ⭐${usedStarOnThisMatch}` : "")
       : betValue === "Cửa dưới"
-        ? "▼ " + lowerTeam
+        ? "▼ " + lowerTeam + (hasHopeStar ? ` ⭐${usedStarOnThisMatch}` : "")
         : "Chưa chọn";
 
   var resultLabel =
