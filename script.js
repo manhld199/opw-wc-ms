@@ -779,7 +779,7 @@ function openMatchDetail(stt) {
   var betValue = betValueRaw.replace(/⭐\d+/, "").trim();
   var winningTeam = String(row[10] || "").trim();
 
-  var matchStatusDetail = String(row[8] || "").trim();
+  var matchStatusDetail = String(row[9] || "").trim();
   var actualWinningChoice = "";
   // Hiển thị số sao khi trận kết thúc hoặc khi mở modal từ tab 'past'
   var showStarNumber =
