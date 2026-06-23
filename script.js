@@ -304,6 +304,24 @@ function renderMatches() {
     var upperTeam = String(row[12] || "").trim();
     var lowerTeam = upperTeam === homeTeam ? awayTeam : homeTeam;
 
+    // Hiển thị số sao chỉ khi trận đã kết thúc; trước đó chỉ hiển thị biểu tượng sao
+    var matchFinished = String(matchStatus || "").includes("Kết thúc");
+    var starDisplayUpper =
+      hasHopeStar && betValue === "Cửa trên"
+        ? matchFinished
+          ? " ⭐ " + usedStarOnThisMatch
+          : " ⭐"
+        : "";
+    var starDisplayLower =
+      hasHopeStar && betValue === "Cửa dưới"
+        ? matchFinished
+          ? " ⭐ " + usedStarOnThisMatch
+          : " ⭐"
+        : "";
+
+    // If there's a star and match not finished, show only the star (no team name)
+    var hideTeamWhenStar = hasHopeStar && !matchFinished;
+
     var actualWinningChoice = "";
     if (winningTeam && matchStatus.includes("Kết thúc")) {
       var hScoreNum = parseFloat(row[6]);
@@ -412,10 +430,10 @@ function renderMatches() {
 
           <div class="flex gap-2 w-full md:w-auto">
             <button class="flex-1 md:w-28 py-2.5 rounded-xl border border-gray-100 text-xs text-gray-400 font-semibold bg-gray-50/50 cursor-not-allowed ${betValue === "Cửa trên" ? "border-emerald-200 bg-emerald-50 text-emerald-700 font-bold" : ""}" disabled>
-              ▲ ${upperTeam}${betValue === "Cửa trên" && hasHopeStar ? " ⭐ " + usedStarOnThisMatch : ""}
+              ▲ ${hideTeamWhenStar ? " ⭐" : " " + upperTeam + starDisplayUpper}
             </button>
             <button class="flex-1 md:w-28 py-2.5 rounded-xl border border-gray-100 text-xs text-gray-400 font-semibold bg-gray-50/50 cursor-not-allowed ${betValue === "Cửa dưới" ? "border-emerald-200 bg-emerald-50 text-emerald-700 font-bold" : ""}" disabled>
-              ▼ ${lowerTeam}${betValue === "Cửa dưới" && hasHopeStar ? " ⭐ " + usedStarOnThisMatch : ""}
+              ▼ ${hideTeamWhenStar ? " ⭐" : " " + lowerTeam + starDisplayLower}
             </button>
           </div>
         </div>
@@ -463,10 +481,10 @@ function renderMatches() {
           <div class="flex flex-col gap-2 w-full md:w-auto items-end">
             <div class="flex gap-2 w-full md:w-auto">
               <button id="btn-u-${row[0]}" onclick="bet(this, ${row[0]}, 'Cửa trên')" class="flex-1 md:w-32 py-2.5 rounded-xl border-2 border-gray-100 text-gray-600 font-bold text-sm bg-white hover:border-[#0F5132] hover:text-[#0F5132] transition-all btn-choice ${betValue === "Cửa trên" ? "selected" : ""}" ${isDisabled}>
-                ▲ ${upperTeam}${betValue === "Cửa trên" && hasHopeStar ? " ⭐ " + usedStarOnThisMatch : ""}
+                ▲ ${hideTeamWhenStar ? " ⭐" : " " + upperTeam + starDisplayUpper}
               </button>
               <button id="btn-d-${row[0]}" onclick="bet(this, ${row[0]}, 'Cửa dưới')" class="flex-1 md:w-32 py-2.5 rounded-xl border-2 border-gray-100 text-gray-600 font-bold text-sm bg-white hover:border-[#0F5132] hover:text-[#0F5132] transition-all btn-choice ${betValue === "Cửa dưới" ? "selected" : ""}" ${isDisabled}>
-                  ▼ ${lowerTeam}${betValue === "Cửa dưới" && hasHopeStar ? " ⭐ " + usedStarOnThisMatch : ""}
+                  ▼ ${hideTeamWhenStar ? " ⭐" : " " + lowerTeam + starDisplayLower}
               </button>
             </div>
             <select id="star-select-${row[0]}" class="text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200 rounded-lg px-3 py-1.5 outline-none cursor-pointer mt-1 hover:bg-amber-100 transition-colors w-full md:w-auto" ${isDisabled}>
@@ -816,12 +834,21 @@ function openMatchDetail(stt) {
     myResultBadge = '<span class="status-badge status-lose">❌ Thua</span>';
   }
 
-  var myChoiceLabel =
-    betValue === "Cửa trên"
-      ? "▲ " + upperTeam + (hasHopeStar ? " ⭐ " + usedStarOnThisMatch : "")
-      : betValue === "Cửa dưới"
-        ? "▼ " + lowerTeam + (hasHopeStar ? " ⭐ " + usedStarOnThisMatch : "")
-        : "Chưa chọn";
+  // Chỉ hiển thị số sao sau khi trận đã kết thúc
+  var showStarNumber = String(matchStatusDetail || "").includes("Kết thúc");
+  var starSuffix = hasHopeStar ? (showStarNumber ? " ⭐ " + usedStarOnThisMatch : " ⭐") : "";
+  var myChoiceLabel = "Chưa chọn";
+  if (hasHopeStar && !showStarNumber) {
+    // Nếu có sao và trận chưa kết thúc: chỉ hiển thị biểu tượng sao
+    myChoiceLabel = "⭐";
+  } else {
+    myChoiceLabel =
+      betValue === "Cửa trên"
+        ? "▲ " + upperTeam + starSuffix
+        : betValue === "Cửa dưới"
+          ? "▼ " + lowerTeam + starSuffix
+          : "Chưa chọn";
+  }
 
   var resultLabel =
     actualWinningChoice === "Hòa"
