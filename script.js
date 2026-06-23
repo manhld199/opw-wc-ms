@@ -779,7 +779,7 @@ function openMatchDetail(stt) {
   var betValue = betValueRaw.replace(/⭐\d+/, "").trim();
   var winningTeam = String(row[10] || "").trim();
 
-  var matchStatusDetail = String(row[9] || "").trim();
+  var matchStatusDetail = String(row[8] || "").trim();
   var actualWinningChoice = "";
   // Hiển thị số sao khi trận kết thúc hoặc khi mở modal từ tab 'past'
   var showStarNumber =
@@ -939,17 +939,17 @@ function openMatchDetail(stt) {
         var choiceLabel = "—";
         // If vote used a hope-star
         if (voteStar) {
-          if (!showStarNumber) {
-            // Before match finished (and not in Past tab): show only star+points
-            choiceLabel = `⭐${voteStar}`;
-          } else {
-            // After match finished or viewing from Past tab: show full team + star
+          // Nếu trận đã kết thúc (showStarNumber = true), hiển thị đầy đủ
+          if (showStarNumber) {
             choiceLabel =
               cleaned === "Cửa trên"
                 ? `▲ ${upperTeam} ⭐${voteStar}`
                 : cleaned === "Cửa dưới"
                   ? `▼ ${lowerTeam} ⭐${voteStar}`
                   : `⭐${voteStar}`;
+          } else {
+            // Nếu trận chưa kết thúc, chỉ hiển thị số điểm của sao
+            choiceLabel = `⭐${voteStar}`;
           }
         } else {
           // No star used, show normal team label
