@@ -578,8 +578,8 @@ function bet(btn, stt, choice) {
       loadData(false);
     })
     .catch((err) => {
+      showToast("Lỗi: " + err.message);
       console.error(err);
-      showToast("Có lỗi xảy ra");
       btn.innerText = originalText;
     });
 }
