@@ -536,6 +536,7 @@ function loadLeaderboardData() {
             else if (b.includes("Từ Thiện")) bClass = "badge-tu-thien";
             else if (b.includes("Tâm Linh")) bClass = "badge-tam-linh";
             else if (b.includes("Ngược Dòng")) bClass = "badge-nguoc-dong";
+            else if (b.includes("Nạn Nhân")) bClass = "badge-nan-nhan";
             badgesHtml += `<span class="player-badge ${bClass}">${b}</span>`;
           });
           badgesHtml += "</div>";

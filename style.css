@@ -132,6 +132,7 @@
 .player-badge.badge-tu-thien { background: #fef2f2; color: #b91c1c; border-color: #fee2e2; }
 .player-badge.badge-tam-linh { background: #fdf4ff; color: #a21caf; border-color: #fae8ff; }
 .player-badge.badge-nguoc-dong { background: #eff6ff; color: #1d4ed8; border-color: #dbeafe; }
+.player-badge.badge-nan-nhan { background: #fff1f2; color: #e11d48; border-color: #ffe4e6; }
 
 /* Status Badges */
 .status-badge {

@@ -360,6 +360,8 @@ function getLeaderboard() {
     var maxWinStreak = Number(dataRange[i][10]) || 0;
     var maxLoseStreak = Number(dataRange[i][11]) || 0;
 
+    var hopeStarImpact = totalScore - ((wins * 10) - (losses * 10));
+
     leaderboard.push({
       name: playerName,
       rank: dataRange[i][1],
@@ -375,6 +377,7 @@ function getLeaderboard() {
       badges: [],
       _cuaDuoiCount: userStats[playerName] ? userStats[playerName].cuaDuoiCount : 0,
       _nguocDongPoints: userStats[playerName] ? userStats[playerName].nguocDongPoints : 0,
+      _hopeStarImpact: hopeStarImpact,
     });
   }
 
@@ -441,6 +444,9 @@ function getLeaderboard() {
     }
     if (highestNguocDong >= 1 && p._nguocDongPoints === highestNguocDong) {
       p.badges.push("🐟 Trùm Ngược Dòng");
+    }
+    if (p._hopeStarImpact < 0) {
+      p.badges.push("🤡 Nạn Nhân Của Sao Hi Vọng");
     }
   }
 
