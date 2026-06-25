@@ -178,11 +178,17 @@
 
       <!-- Chart Section -->
       <div id="chartSection" style="display: none" class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden fade-in-up p-6">
-        <div class="flex justify-between items-center mb-6">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
           <h2 class="text-lg font-bold text-gray-800">Thống kê diễn biến</h2>
-          <div class="flex bg-gray-100 p-1 rounded-xl">
-            <button id="btnChartPoints" onclick="switchChartMode('points')" class="px-4 py-1.5 text-sm font-bold rounded-lg bg-white shadow-sm text-emerald-700 transition-all">Điểm số</button>
-            <button id="btnChartRanks" onclick="switchChartMode('ranks')" class="px-4 py-1.5 text-sm font-semibold rounded-lg text-gray-500 hover:text-gray-700 transition-all">Thứ hạng</button>
+          <div class="flex flex-wrap gap-3 items-center">
+            <div class="flex bg-gray-100 p-1 rounded-xl">
+              <button onclick="toggleAllSeries(true)" class="px-3 py-1.5 text-xs font-semibold rounded-lg text-gray-600 hover:bg-white hover:shadow-sm transition-all">Hiện tất cả</button>
+              <button onclick="toggleAllSeries(false)" class="px-3 py-1.5 text-xs font-semibold rounded-lg text-gray-600 hover:bg-white hover:shadow-sm transition-all">Ẩn tất cả</button>
+            </div>
+            <div class="flex bg-gray-100 p-1 rounded-xl">
+              <button id="btnChartPoints" onclick="switchChartMode('points')" class="px-4 py-1.5 text-sm font-bold rounded-lg bg-white shadow-sm text-emerald-700 transition-all">Điểm số</button>
+              <button id="btnChartRanks" onclick="switchChartMode('ranks')" class="px-4 py-1.5 text-sm font-semibold rounded-lg text-gray-500 hover:text-gray-700 transition-all">Thứ hạng</button>
+            </div>
           </div>
         </div>
         <div id="mainChart" class="w-full min-h-[400px]"></div>

@@ -1169,6 +1169,20 @@ function switchChartMode(mode) {
   }
 }
 
+function toggleAllSeries(show) {
+  if (!chartInstance || !chartRawData) return;
+  const isPointsMode = currentChartMode === "points";
+  const series = isPointsMode ? chartRawData.pointsSeries : chartRawData.ranksSeries;
+  
+  series.forEach(s => {
+    if (show) {
+      chartInstance.showSeries(s.name);
+    } else {
+      chartInstance.hideSeries(s.name);
+    }
+  });
+}
+
 function renderChart() {
   if (!chartRawData) return;
   
