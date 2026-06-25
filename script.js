@@ -2,8 +2,12 @@ const GAS_URL =
   "https://script.google.com/macros/s/AKfycbym9V4LdU7HxPPHL9CzxheBkqrauwKqQLnmxpwqjMeT0WBJaZvcmAUpPyQonNqA8wfT/exec";
 
 let currentUserEmail = "";
-let currentTab = "active"; // Các trạng thái: "active", "past", hoặc "leaderboard"
+let currentTab = "active"; // Các trạng thái: "active", "past", "leaderboard", hoặc "chart"
 let currentAvailableStars = [20, 30, 40, 50];
+
+let chartInstance = null;
+let chartRawData = null;
+let currentChartMode = "points"; // "points" or "ranks"
 
 // Mảng lưu trữ dữ liệu các trận đấu đang được chọn (để phục vụ search/filter)
 let currentMatchesData = [];
@@ -121,20 +125,33 @@ function switchTab(tabName) {
       ? "font-bold text-[#0F5132] border-b-4 border-[#0F5132]"
       : "font-semibold text-gray-400 hover:text-gray-600");
 
+  const btnChart = document.getElementById("btnChart");
+
   btnLeader.className =
     "pb-3 px-1 text-sm whitespace-nowrap transition-all " +
     (tabName === "leaderboard"
       ? "font-bold text-[#0F5132] border-b-4 border-[#0F5132]"
       : "font-semibold text-gray-400 hover:text-gray-600");
 
+  btnChart.className =
+    "pb-3 px-1 text-sm whitespace-nowrap transition-all " +
+    (tabName === "chart"
+      ? "font-bold text-[#0F5132] border-b-4 border-[#0F5132]"
+      : "font-semibold text-gray-400 hover:text-gray-600");
+
   // Xử lý ẩn hiện bảng phù hợp với tab được chọn
+  document.getElementById("mainTable").style.display = "none";
+  document.getElementById("leaderboardTable").style.display = "none";
+  document.getElementById("chartSection").style.display = "none";
+
   if (tabName === "leaderboard") {
-    document.getElementById("mainTable").style.display = "none";
     document.getElementById("leaderboardTable").style.display = "block";
     loadLeaderboardData();
+  } else if (tabName === "chart") {
+    document.getElementById("chartSection").style.display = "block";
+    loadChartData();
   } else {
     document.getElementById("mainTable").style.display = "block";
-    document.getElementById("leaderboardTable").style.display = "none";
 
     // Reset filters
     document.getElementById("searchInput").value = "";
@@ -733,6 +750,9 @@ function manualRefresh() {
 
   if (currentTab === "leaderboard") {
     loadLeaderboardData();
+  } else if (currentTab === "chart") {
+    chartRawData = null;
+    loadChartData();
   } else {
     loadData(true);
   }
@@ -1091,6 +1111,140 @@ function triggerLoseEffect() {
   }
 
   playMemeSound("lose");
+}
+
+function setupAutoSyncTrigger() {
+  // Xóa các trigger cũ nếu có để tránh trùng lặp
+  var triggers = ScriptApp.getProjectTriggers();
+  for (var i = 0; i < triggers.length; i++) {
+    if (triggers[i].getHandlerFunction() === "syncLiveScores") {
+      ScriptApp.deleteTrigger(triggers[i]);
+    }
+  }
+
+  // Tạo trigger mới chạy mỗi 1 phút
+  ScriptApp.newTrigger("syncLiveScores").timeBased().everyMinutes(1).create();
+
+  return "Đã cài đặt tự động cập nhật tỉ số mỗi 1 phút thành công!";
+}
+
+// --- CHART LOGIC ---
+function loadChartData() {
+  if (chartRawData) {
+    renderChart();
+    return;
+  }
+  
+  showLoader();
+  apiCall("getChartData")
+    .then((data) => {
+      chartRawData = data;
+      renderChart();
+      hideLoader();
+    })
+    .catch((err) => {
+      console.error(err);
+      showToast("Lỗi tải dữ liệu biểu đồ!");
+      hideLoader();
+    });
+}
+
+function switchChartMode(mode) {
+  if (currentChartMode === mode) return;
+  currentChartMode = mode;
+  
+  const btnPoints = document.getElementById("btnChartPoints");
+  const btnRanks = document.getElementById("btnChartRanks");
+  
+  if (mode === "points") {
+    btnPoints.className = "px-4 py-1.5 text-sm font-bold rounded-lg bg-white shadow-sm text-emerald-700 transition-all";
+    btnRanks.className = "px-4 py-1.5 text-sm font-semibold rounded-lg text-gray-500 hover:text-gray-700 transition-all";
+  } else {
+    btnRanks.className = "px-4 py-1.5 text-sm font-bold rounded-lg bg-white shadow-sm text-emerald-700 transition-all";
+    btnPoints.className = "px-4 py-1.5 text-sm font-semibold rounded-lg text-gray-500 hover:text-gray-700 transition-all";
+  }
+  
+  if (chartRawData) {
+    renderChart();
+  }
+}
+
+function renderChart() {
+  if (!chartRawData) return;
+  
+  const isPointsMode = currentChartMode === "points";
+  const series = isPointsMode ? chartRawData.pointsSeries : chartRawData.ranksSeries;
+  
+  const options = {
+    series: series,
+    chart: {
+      type: 'line',
+      height: 450,
+      fontFamily: 'Lexend, sans-serif',
+      toolbar: {
+        show: true
+      },
+      zoom: {
+        enabled: true
+      },
+      animations: {
+        enabled: true,
+        easing: 'easeinout',
+        speed: 800,
+      }
+    },
+    stroke: {
+      curve: 'smooth',
+      width: 3
+    },
+    xaxis: {
+      categories: chartRawData.categories,
+      tickPlacement: 'on',
+      labels: {
+        style: {
+          fontSize: '10px'
+        }
+      }
+    },
+    yaxis: {
+      title: {
+        text: isPointsMode ? 'Điểm số' : 'Thứ hạng',
+        style: {
+          fontWeight: 600,
+        }
+      },
+      reversed: !isPointsMode,
+      min: isPointsMode ? undefined : 1
+    },
+    markers: {
+      size: 4,
+      hover: {
+        size: 6
+      }
+    },
+    tooltip: {
+      y: {
+        formatter: function (val) {
+          return isPointsMode ? val + " điểm" : "Hạng " + val;
+        }
+      }
+    },
+    legend: {
+      position: 'bottom',
+      horizontalAlign: 'center',
+      itemMargin: {
+        horizontal: 10,
+        vertical: 5
+      }
+    }
+  };
+
+  if (chartInstance) {
+    chartInstance.destroy();
+  }
+
+  chartInstance = new ApexCharts(document.querySelector("#mainChart"), options);
+  chartInstance.render();
 }
 
 function resetMemeEffects() {

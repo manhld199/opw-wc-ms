@@ -23,6 +23,8 @@ function doPost(e) {
       output = getMatchDetail(params.stt);
     } else if (action === "submitBet") {
       output = submitBet(email, params.stt, params.choice);
+    } else if (action === "getChartData") {
+      output = getChartData();
     } else {
       output = {
         error: "Invalid Action",
@@ -645,4 +647,99 @@ function setupAutoSyncTrigger() {
   ScriptApp.newTrigger("syncLiveScores").timeBased().everyMinutes(1).create();
 
   return "Đã cài đặt tự động cập nhật tỉ số mỗi 1 phút thành công!";
+}
+
+// --- HÀM LẤY DỮ LIỆU ĐỂ VẼ BIỂU ĐỒ ---
+function getChartData() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheetScore = ss.getSheetByName("Tính điểm");
+  var sheetData = ss.getSheetByName("Data");
+  
+  if (!sheetScore || !sheetData) return { error: "Không tìm thấy sheet Tính điểm" };
+
+  var scoreData = sheetScore.getRange("A3:Z100").getValues();
+  var userData = sheetData.getRange("A2:C50").getValues();
+  
+  var users = [];
+  for (var u = 0; u < userData.length; u++) {
+    var email = userData[u][0];
+    var name = userData[u][1];
+    var colChar = userData[u][2];
+    if (email && name && colChar) {
+      users.push({
+        name: name,
+        colIndex: columnLetterToNumber(colChar) - 1,
+        runningScore: 0
+      });
+    }
+  }
+  
+  var categories = ["Bắt đầu"];
+  var seriesPoints = {};
+  var seriesRanks = {};
+  
+  for (var i = 0; i < users.length; i++) {
+    seriesPoints[users[i].name] = [0]; 
+    seriesRanks[users[i].name] = [1]; 
+  }
+
+  for (var i = 0; i < scoreData.length; i++) {
+    var stt = String(scoreData[i][0]).trim();
+    if (stt === "") continue;
+    
+    var homeTeam = String(scoreData[i][2]).trim();
+    var awayTeam = String(scoreData[i][3]).trim();
+    var status = String(scoreData[i][4]).trim();
+    
+    if (!status.includes("Kết thúc")) {
+      continue;
+    }
+
+    var matchLabel = homeTeam + "-" + awayTeam;
+    categories.push(matchLabel);
+
+    var currentScores = [];
+    for (var u = 0; u < users.length; u++) {
+      var pt = Number(scoreData[i][users[u].colIndex]) || 0;
+      users[u].runningScore += pt;
+      seriesPoints[users[u].name].push(users[u].runningScore);
+      currentScores.push({ name: users[u].name, score: users[u].runningScore });
+    }
+
+    // Tính rank
+    currentScores.sort(function(a, b) {
+      return b.score - a.score;
+    });
+
+    var currentRank = 1;
+    for (var r = 0; r < currentScores.length; r++) {
+      if (r > 0 && currentScores[r].score === currentScores[r-1].score) {
+        // cùng rank
+      } else {
+        currentRank = r + 1;
+      }
+      var pName = currentScores[r].name;
+      seriesRanks[pName].push(currentRank);
+    }
+  }
+
+  var formattedPointsSeries = [];
+  var formattedRanksSeries = [];
+  for (var i = 0; i < users.length; i++) {
+    var name = users[i].name;
+    formattedPointsSeries.push({
+      name: name,
+      data: seriesPoints[name]
+    });
+    formattedRanksSeries.push({
+      name: name,
+      data: seriesRanks[name]
+    });
+  }
+
+  return {
+    categories: categories,
+    pointsSeries: formattedPointsSeries,
+    ranksSeries: formattedRanksSeries
+  };
 }
