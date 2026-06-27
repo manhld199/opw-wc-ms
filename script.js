@@ -370,18 +370,21 @@ function renderMatches() {
     }
 
     // Định dạng thời gian
-    var matchTimeObj = new Date(row[3]);
-    var timeStr = isNaN(matchTimeObj.getTime())
-      ? row[3]
-      : matchTimeObj.toLocaleTimeString("vi-VN", {
-          hour: "2-digit",
-          minute: "2-digit",
-        }) +
-        " • " +
-        matchTimeObj.toLocaleDateString("vi-VN", {
-          day: "2-digit",
-          month: "2-digit",
-        });
+    var matchDate = new Date(row[3]);
+    var dateStr = matchDate.toLocaleDateString("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+    });
+    var timeStr = matchDate.toLocaleTimeString("vi-VN", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+
+    var isKnockout = parseInt(row[0]) >= 69;
+    var stageBadge = isKnockout 
+      ? '<span class="text-[9px] font-bold px-1.5 py-0.5 bg-purple-100 text-purple-700 border border-purple-200 rounded-md ml-1 shadow-sm">🏆 Knockout</span>' 
+      : '<span class="text-[9px] font-bold px-1.5 py-0.5 bg-gray-100 text-gray-500 border border-gray-200 rounded-md ml-1">Vòng bảng</span>';
 
     var unbetClass = currentTab === "active" && betValue === "" ? "row-unbet" : "";
     var unbetIcon =
@@ -408,6 +411,7 @@ function renderMatches() {
               <div class="text-left md:text-center">
                 <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Kick-off</p>
                 <p class="text-xs md:text-sm font-bold text-gray-700">${timeStr}</p>
+                <div class="mt-1">${stageBadge}</div>
               </div>
               <div class="mt-0 md:mt-2 text-right md:text-center">
                 <span class="status-badge ${badgeClass} text-[10px] md:text-[11px] py-1 px-2 md:px-3">${badgeText}</span>
@@ -456,6 +460,7 @@ function renderMatches() {
               <div class="text-left md:text-center">
                 <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Kick-off</p>
                 <p class="text-xs md:text-sm font-bold text-gray-700">${timeStr}</p>
+                <div class="mt-1">${stageBadge}</div>
               </div>
               <div class="mt-0 md:mt-2 text-right md:text-center text-xs md:text-sm font-medium" id="cd-${row[0]}">
                 ⏱...
