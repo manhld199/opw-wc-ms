@@ -409,6 +409,7 @@ function renderMatches() {
               <div class="text-left md:text-center">
                 <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Kick-off</p>
                 <p class="text-xs md:text-sm font-bold text-gray-700">${timeStr}</p>
+                <p class="text-[10px] font-medium text-gray-500 mt-0.5">${dateStr}</p>
                 <div class="mt-1">${stageBadge}</div>
               </div>
               <div class="mt-0 md:mt-2 text-right md:text-center">
@@ -458,6 +459,7 @@ function renderMatches() {
               <div class="text-left md:text-center">
                 <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Kick-off</p>
                 <p class="text-xs md:text-sm font-bold text-gray-700">${timeStr}</p>
+                <p class="text-[10px] font-medium text-gray-500 mt-0.5">${dateStr}</p>
                 <div class="mt-1">${stageBadge}</div>
               </div>
               <div class="mt-0 md:mt-2 text-right md:text-center text-xs md:text-sm font-medium" id="cd-${row[0]}">
@@ -500,7 +502,7 @@ function renderMatches() {
               </button>
             </div>
             <div class="flex gap-2 items-center mt-1 w-full md:w-auto">
-              <select id="star-select-${row[0]}" onchange="onStarSelectChange(this, ${row[0]})" class="flex-1 text-[10px] md:text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200 rounded-lg px-2 md:px-3 py-1.5 outline-none cursor-pointer hover:bg-amber-100 transition-colors" ${isDisabled}>
+              <select id="star-select-${row[0]}" onchange="onStarSelectChange(this, ${row[0]})" class="${isKnockout ? 'hidden' : 'flex-1'} text-[10px] md:text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200 rounded-lg px-2 md:px-3 py-1.5 outline-none cursor-pointer hover:bg-amber-100 transition-colors" ${isDisabled}>
                 <option value="">Sao (10đ)</option>
                 <option value="20" ${usedStarOnThisMatch === 20 ? "selected" : !currentAvailableStars.includes(20) ? "disabled" : ""}>⭐ 20đ ${!currentAvailableStars.includes(20) && usedStarOnThisMatch !== 20 ? "(Hết)" : ""}</option>
                 <option value="30" ${usedStarOnThisMatch === 30 ? "selected" : !currentAvailableStars.includes(30) ? "disabled" : ""}>⭐ 30đ ${!currentAvailableStars.includes(30) && usedStarOnThisMatch !== 30 ? "(Hết)" : ""}</option>
