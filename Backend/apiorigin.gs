@@ -172,7 +172,25 @@ function submitBet(email, stt, choice) {
     return "Lỗi: Không tìm thấy trận đấu!";
   }
 
-  var matchTime = new Date(matchData[3]);
+  var timeRaw = matchData[3];
+  var matchTime;
+  if (timeRaw instanceof Date) {
+    matchTime = timeRaw;
+  } else {
+    var timeStr = String(timeRaw).trim();
+    var m = timeStr.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{2})/);
+    if (m) {
+      matchTime = new Date(
+        parseInt(m[3], 10),
+        parseInt(m[2], 10) - 1,
+        parseInt(m[1], 10),
+        parseInt(m[4], 10),
+        parseInt(m[5], 10)
+      );
+    } else {
+      matchTime = new Date(timeStr);
+    }
+  }
 
   if (
     new Date() >
