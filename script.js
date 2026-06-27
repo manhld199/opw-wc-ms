@@ -370,16 +370,14 @@ function renderMatches() {
     }
 
     // Định dạng thời gian
-    var matchDate = new Date(row[3]);
-    var dateStr = matchDate.toLocaleDateString("vi-VN", {
-      day: "2-digit",
-      month: "2-digit",
-    });
-    var timeStr = matchDate.toLocaleTimeString("vi-VN", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    });
+    var rawTime = String(row[3] || "");
+    var timeStr = rawTime;
+    var dateStr = "";
+    var tMatch = rawTime.match(/^(\d{2}\/\d{2})\/\d{4}\s+(\d{2}:\d{2})/);
+    if (tMatch) {
+      dateStr = tMatch[1];
+      timeStr = tMatch[2];
+    }
 
     var isKnockout = parseInt(row[0]) >= 69;
     var stageBadge = isKnockout 
@@ -509,7 +507,7 @@ function renderMatches() {
                 <option value="40" ${usedStarOnThisMatch === 40 ? "selected" : !currentAvailableStars.includes(40) ? "disabled" : ""}>⭐ 40đ ${!currentAvailableStars.includes(40) && usedStarOnThisMatch !== 40 ? "(Hết)" : ""}</option>
                 <option value="50" ${usedStarOnThisMatch === 50 ? "selected" : !currentAvailableStars.includes(50) ? "disabled" : ""}>⭐ 50đ ${!currentAvailableStars.includes(50) && usedStarOnThisMatch !== 50 ? "(Hết)" : ""}</option>
               </select>
-              <input type="number" id="rocket-input-${row[0]}" min="20" max="${currentRemainingRocket + (usedRocketOnThisMatch || 0)}" value="${usedRocketOnThisMatch || ""}" placeholder="${parseInt(row[0]) >= 69 ? '🚀 Tên lửa (≥20đ)' : '🚀 Chỉ Knockout'}" class="flex-1 text-[10px] md:text-xs font-bold bg-purple-50 text-purple-700 border border-purple-200 rounded-lg px-2 md:px-3 py-1.5 outline-none hover:bg-purple-100 transition-colors w-28 disabled:bg-gray-100 disabled:text-gray-400 disabled:border-gray-200 disabled:cursor-not-allowed" ${isDisabled || parseInt(row[0]) < 69 ? 'disabled' : ''} oninput="onRocketInputChange(this, ${row[0]})" title="${parseInt(row[0]) < 69 ? 'Tên lửa hi vọng chỉ được dùng từ vòng Knockout' : ''}">
+              <input type="number" id="rocket-input-${row[0]}" step="10" min="20" max="${currentRemainingRocket + (usedRocketOnThisMatch || 0)}" value="${usedRocketOnThisMatch || ""}" placeholder="${parseInt(row[0]) >= 69 ? '🚀 Tên lửa (≥20đ)' : '🚀 Chỉ Knockout'}" class="flex-1 text-[10px] md:text-xs font-bold bg-purple-50 text-purple-700 border border-purple-200 rounded-lg px-2 md:px-3 py-1.5 outline-none hover:bg-purple-100 transition-colors w-28 disabled:bg-gray-100 disabled:text-gray-400 disabled:border-gray-200 disabled:cursor-not-allowed" ${isDisabled || parseInt(row[0]) < 69 ? 'disabled' : ''} oninput="onRocketInputChange(this, ${row[0]})" title="${parseInt(row[0]) < 69 ? 'Tên lửa hi vọng chỉ được dùng từ vòng Knockout' : ''}">
             </div>
           </div>
         </div>
@@ -618,6 +616,11 @@ function bet(btn, stt, choice) {
 
   var sVal = starSelect && starSelect.value ? parseInt(starSelect.value) : 0;
   var rVal = rocketInput && rocketInput.value ? parseInt(rocketInput.value) : 0;
+
+  if (rVal > 0 && rVal % 10 !== 0) {
+    showToast("❌ Lỗi: Điểm cược Tên lửa phải là bội số của 10 (20, 30, 40...)!");
+    return;
+  }
 
   if (sVal > 0 && rVal > 0) {
     showToast("❌ Lỗi: Chỉ được chọn 1 loại (Sao hoặc Tên lửa) cho 1 trận!");

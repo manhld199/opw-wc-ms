@@ -191,6 +191,11 @@ function submitBet(email, stt, choice) {
     var requestedRocket = rocketRegex ? parseInt(rocketRegex[1], 10) : null;
 
     if (requestedRocket) {
+      // KIỂM TRA BỘI SỐ CỦA 10
+      if (requestedRocket % 10 !== 0) {
+        return "❌ Lỗi: Điểm cược tên lửa phải là bội số của 10 (ví dụ 20, 30, 40...)!";
+      }
+
       // GIỚI HẠN VÒNG LOẠI TRỰC TIẾP (STT 69 là trận Nam Phi vs Canada - vòng 32 đội)
       var KNOCKOUT_START_STT = 69; 
       if (parseInt(stt) < KNOCKOUT_START_STT) {
