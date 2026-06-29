@@ -374,7 +374,11 @@ function getLeaderboard() {
     var winningTeam = String(infoRange[j][10] || "").trim();
     var actualWinningChoice = "";
     if (winningTeam && matchStatus.includes("Kết thúc")) {
-      actualWinningChoice = winningTeam === upperTeam ? "Cửa trên" : "Cửa dưới";
+      if (winningTeam === "Hòa" || winningTeam === "Hòa kèo") {
+        actualWinningChoice = "Hòa";
+      } else {
+        actualWinningChoice = winningTeam === upperTeam ? "Cửa trên" : "Cửa dưới";
+      }
     }
 
     var upperCount = 0;
@@ -388,10 +392,15 @@ function getLeaderboard() {
         var betVal = String(betRange[j][cIdx]).trim();
         matchBets[pName] = betVal;
 
-        if (betVal.includes("⭐")) userStats[pName].usedStar = true;
-        if (betVal.includes("🚀")) userStats[pName].usedRocket = true;
-
         var cleanedBet = betVal.replace(/⭐\d+/, "").replace(/🚀\d+/, "").trim();
+
+        if (actualWinningChoice) {
+          var isLose = (cleanedBet !== actualWinningChoice && actualWinningChoice !== "Hòa");
+          if (isLose) {
+            if (betVal.includes("⭐")) userStats[pName].usedStar = true;
+            if (betVal.includes("🚀")) userStats[pName].usedRocket = true;
+          }
+        }
 
         if (cleanedBet === "Cửa dưới") userStats[pName].cuaDuoiCount++;
 
