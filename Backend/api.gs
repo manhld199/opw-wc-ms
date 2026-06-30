@@ -190,14 +190,14 @@ function submitBet(email, stt, choice) {
         parseInt(m[2], 10) - 1,
         parseInt(m[1], 10),
         parseInt(m[4], 10),
-        parseInt(m[5], 10)
+        parseInt(m[5], 10),
       );
     } else {
       matchTime = new Date(timeStr);
     }
   }
 
-  if (new Date() > new Date(matchTime.getTime() - 60 * 60 * 1000)) {
+  if (new Date() > new Date(matchTime.getTime() - 1 * 60 * 1000)) {
     return "❌ Đã quá thời gian!";
   }
 
@@ -215,9 +215,13 @@ function submitBet(email, stt, choice) {
       }
 
       // GIỚI HẠN VÒNG LOẠI TRỰC TIẾP (STT 69 là trận Nam Phi vs Canada - vòng 32 đội)
-      var KNOCKOUT_START_STT = 69; 
+      var KNOCKOUT_START_STT = 69;
       if (parseInt(stt) < KNOCKOUT_START_STT) {
-        return "❌ Lỗi: Tên lửa hi vọng chỉ được dùng ở vòng loại trực tiếp (Từ trận " + KNOCKOUT_START_STT + ")!";
+        return (
+          "❌ Lỗi: Tên lửa hi vọng chỉ được dùng ở vòng loại trực tiếp (Từ trận " +
+          KNOCKOUT_START_STT +
+          ")!"
+        );
       }
 
       if (requestedRocket < 20) {
@@ -225,12 +229,12 @@ function submitBet(email, stt, choice) {
       }
       var remainingRocket = 200;
       var maxRow = sheetBet.getLastRow();
-      if (maxRow < 3) maxRow = 3; 
+      if (maxRow < 3) maxRow = 3;
 
       var userBetsForRocket = sheetBet.getRange(3, userColNum, maxRow - 2, 1).getValues();
-      
+
       for (var k = 0; k < userBetsForRocket.length; k++) {
-        if (k + 3 !== row) { 
+        if (k + 3 !== row) {
           var betStrRocket = String(userBetsForRocket[k][0] || "");
           var existingRocket = betStrRocket.match(/🚀(\d+)/);
           if (existingRocket && existingRocket[1]) {
@@ -246,15 +250,15 @@ function submitBet(email, stt, choice) {
 
     if (requestedStar) {
       var availableStars = [20, 30, 40, 50];
-      
+
       // Khắc phục triệt để lỗi getRange out of bounds bằng getLastRow
       var maxRow = sheetBet.getLastRow();
-      if (maxRow < 3) maxRow = 3; 
+      if (maxRow < 3) maxRow = 3;
 
       var userBets = sheetBet.getRange(3, userColNum, maxRow - 2, 1).getValues();
-      
+
       for (var k = 0; k < userBets.length; k++) {
-        if (k + 3 !== row) { 
+        if (k + 3 !== row) {
           var betStr = String(userBets[k][0] || "");
           var existingMatch = betStr.match(/⭐(\d+)/);
           if (existingMatch && existingMatch[1]) {
@@ -397,8 +401,8 @@ function getLeaderboard() {
         var cleanedBet = betVal.replace(/⭐\d+/, "").replace(/🚀\d+/, "").trim();
 
         if (actualWinningChoice) {
-          var isLose = (cleanedBet !== actualWinningChoice && actualWinningChoice !== "Hòa");
-          var isWin = (cleanedBet === actualWinningChoice);
+          var isLose = cleanedBet !== actualWinningChoice && actualWinningChoice !== "Hòa";
+          var isWin = cleanedBet === actualWinningChoice;
           if (isLose) {
             if (betVal.includes("⭐")) userStats[pName].usedStar = true;
             if (betVal.includes("🚀")) userStats[pName].usedRocket = true;
@@ -457,7 +461,7 @@ function getLeaderboard() {
     var maxWinStreak = Number(dataRange[i][10]) || 0;
     var maxLoseStreak = Number(dataRange[i][11]) || 0;
 
-    var hopeStarImpact = totalScore - ((wins * 10) - (losses * 10));
+    var hopeStarImpact = totalScore - (wins * 10 - losses * 10);
 
     leaderboard.push({
       name: playerName,
@@ -763,12 +767,12 @@ function getChartData() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheetScore = ss.getSheetByName("Tính điểm");
   var sheetData = ss.getSheetByName("Data");
-  
+
   if (!sheetScore || !sheetData) return { error: "Không tìm thấy sheet Tính điểm" };
 
   var scoreData = sheetScore.getRange("A3:AZ200").getValues();
   var userData = sheetData.getRange("A2:C100").getValues();
-  
+
   var users = [];
   for (var u = 0; u < userData.length; u++) {
     var email = userData[u][0];
@@ -778,28 +782,28 @@ function getChartData() {
       users.push({
         name: name,
         colIndex: columnLetterToNumber(colChar) - 1,
-        runningScore: 0
+        runningScore: 0,
       });
     }
   }
-  
+
   var categories = ["Bắt đầu"];
   var seriesPoints = {};
   var seriesRanks = {};
-  
+
   for (var i = 0; i < users.length; i++) {
-    seriesPoints[users[i].name] = [0]; 
-    seriesRanks[users[i].name] = [1]; 
+    seriesPoints[users[i].name] = [0];
+    seriesRanks[users[i].name] = [1];
   }
 
   for (var i = 0; i < scoreData.length; i++) {
     var stt = String(scoreData[i][0]).trim();
     if (stt === "") continue;
-    
+
     var homeTeam = String(scoreData[i][2]).trim();
     var awayTeam = String(scoreData[i][3]).trim();
     var status = String(scoreData[i][4]).trim();
-    
+
     if (!status.includes("Kết thúc")) {
       continue;
     }
@@ -816,13 +820,13 @@ function getChartData() {
     }
 
     // Tính rank
-    currentScores.sort(function(a, b) {
+    currentScores.sort(function (a, b) {
       return b.score - a.score;
     });
 
     var currentRank = 1;
     for (var r = 0; r < currentScores.length; r++) {
-      if (r > 0 && currentScores[r].score === currentScores[r-1].score) {
+      if (r > 0 && currentScores[r].score === currentScores[r - 1].score) {
         // cùng rank
       } else {
         currentRank = r + 1;
@@ -838,17 +842,17 @@ function getChartData() {
     var name = users[i].name;
     formattedPointsSeries.push({
       name: name,
-      data: seriesPoints[name]
+      data: seriesPoints[name],
     });
     formattedRanksSeries.push({
       name: name,
-      data: seriesRanks[name]
+      data: seriesRanks[name],
     });
   }
 
   return {
     categories: categories,
     pointsSeries: formattedPointsSeries,
-    ranksSeries: formattedRanksSeries
+    ranksSeries: formattedRanksSeries,
   };
 }
