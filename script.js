@@ -380,8 +380,8 @@ function renderMatches() {
     }
 
     var isKnockout = parseInt(row[0]) >= 69;
-    var stageBadge = isKnockout 
-      ? '<span class="text-[9px] font-bold px-1.5 py-0.5 bg-purple-100 text-purple-700 border border-purple-200 rounded-md ml-1 shadow-sm">🏆 Knockout</span>' 
+    var stageBadge = isKnockout
+      ? '<span class="text-[9px] font-bold px-1.5 py-0.5 bg-purple-100 text-purple-700 border border-purple-200 rounded-md ml-1 shadow-sm">🏆 Knockout</span>'
       : '<span class="text-[9px] font-bold px-1.5 py-0.5 bg-gray-100 text-gray-500 border border-gray-200 rounded-md ml-1">Vòng bảng</span>';
 
     var unbetClass = currentTab === "active" && betValue === "" ? "row-unbet" : "";
@@ -1194,7 +1194,7 @@ function loadChartData() {
     renderChart();
     return;
   }
-  
+
   showLoader();
   apiCall("getChartData")
     .then((data) => {
@@ -1212,10 +1212,10 @@ function loadChartData() {
 function switchChartMode(mode) {
   if (currentChartMode === mode) return;
   currentChartMode = mode;
-  
+
   const btnPoints = document.getElementById("btnChartPoints");
   const btnRanks = document.getElementById("btnChartRanks");
-  
+
   if (mode === "points") {
     btnPoints.className = "px-4 py-1.5 text-sm font-bold rounded-lg bg-white shadow-sm text-emerald-700 transition-all";
     btnRanks.className = "px-4 py-1.5 text-sm font-semibold rounded-lg text-gray-500 hover:text-gray-700 transition-all";
@@ -1223,7 +1223,7 @@ function switchChartMode(mode) {
     btnRanks.className = "px-4 py-1.5 text-sm font-bold rounded-lg bg-white shadow-sm text-emerald-700 transition-all";
     btnPoints.className = "px-4 py-1.5 text-sm font-semibold rounded-lg text-gray-500 hover:text-gray-700 transition-all";
   }
-  
+
   if (chartRawData) {
     renderChart();
   }
@@ -1233,7 +1233,7 @@ function toggleAllSeries(show) {
   if (!chartInstance || !chartRawData) return;
   const isPointsMode = currentChartMode === "points";
   const series = isPointsMode ? chartRawData.pointsSeries : chartRawData.ranksSeries;
-  
+
   series.forEach(s => {
     if (show) {
       chartInstance.showSeries(s.name);
@@ -1245,10 +1245,10 @@ function toggleAllSeries(show) {
 
 function renderChart() {
   if (!chartRawData) return;
-  
+
   const isPointsMode = currentChartMode === "points";
   const series = isPointsMode ? chartRawData.pointsSeries : chartRawData.ranksSeries;
-  
+
   const options = {
     series: series,
     chart: {

@@ -351,6 +351,8 @@ function getLeaderboard() {
         nguocDongPoints: 0,
         usedStar: false,
         usedRocket: false,
+        starImpact: 0,
+        rocketImpact: 0,
       };
     }
   }
@@ -396,9 +398,22 @@ function getLeaderboard() {
 
         if (actualWinningChoice) {
           var isLose = (cleanedBet !== actualWinningChoice && actualWinningChoice !== "Hòa");
+          var isWin = (cleanedBet === actualWinningChoice);
           if (isLose) {
             if (betVal.includes("⭐")) userStats[pName].usedStar = true;
             if (betVal.includes("🚀")) userStats[pName].usedRocket = true;
+          }
+          if (isWin || isLose) {
+            var starMatch = betVal.match(/⭐(\d+)/);
+            if (starMatch) {
+              var pts = parseInt(starMatch[1], 10) - 10;
+              userStats[pName].starImpact += isWin ? pts : -pts;
+            }
+            var rocketMatch = betVal.match(/🚀(\d+)/);
+            if (rocketMatch) {
+              var pts = parseInt(rocketMatch[1], 10) - 10;
+              userStats[pName].rocketImpact += isWin ? pts : -pts;
+            }
           }
         }
 
@@ -462,6 +477,8 @@ function getLeaderboard() {
       _usedStar: userStats[playerName] ? userStats[playerName].usedStar : false,
       _usedRocket: userStats[playerName] ? userStats[playerName].usedRocket : false,
       _hopeStarImpact: hopeStarImpact,
+      _starImpact: userStats[playerName] ? userStats[playerName].starImpact : 0,
+      _rocketImpact: userStats[playerName] ? userStats[playerName].rocketImpact : 0,
     });
   }
 
@@ -529,12 +546,16 @@ function getLeaderboard() {
     if (highestNguocDong >= 1 && p._nguocDongPoints === highestNguocDong) {
       p.badges.push("🐟 Trùm Ngược Dòng");
     }
-    if (p._hopeStarImpact < 0) {
-      if (p._usedStar && p._usedRocket) {
-        p.badges.push("🤡 Siêu Nạn Nhân");
-      } else if (p._usedRocket) {
+    var isStarVictim = p._starImpact < 0;
+    var isRocketVictim = p._rocketImpact < 0;
+
+    if (isStarVictim && isRocketVictim) {
+      p.badges.push("🤡 Siêu Nạn Nhân");
+    } else {
+      if (isRocketVictim) {
         p.badges.push("🤡 Nạn Nhân Của Tên Lửa Hi Vọng");
-      } else {
+      }
+      if (isStarVictim) {
         p.badges.push("🤡 Nạn Nhân Của Sao Hi Vọng");
       }
     }
