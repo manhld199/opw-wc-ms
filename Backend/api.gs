@@ -329,6 +329,16 @@ function getPastMatches(email) {
 
 // --- HÀM LẤY DỮ LIỆU BẢNG VÀNG ---
 function getLeaderboard() {
+  var cache = CacheService.getScriptCache();
+  var cached = cache.get("leaderboard_data");
+  if (cached) {
+    try {
+      return JSON.parse(cached);
+    } catch (e) {
+      // Ignore cache if parsing fails
+    }
+  }
+
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = ss.getSheetByName("Bảng vàng");
   var sheetInfo = ss.getSheetByName("Trận đấu");
@@ -565,6 +575,12 @@ function getLeaderboard() {
     }
   }
 
+  try {
+    cache.put("leaderboard_data", JSON.stringify(leaderboard), 60); // Cache for 60 seconds
+  } catch (e) {
+    // ignore
+  }
+
   return leaderboard;
 }
 
@@ -700,6 +716,10 @@ function syncLiveScores() {
       return teamDictionary[enName] || enName;
     };
 
+    var scoresRange = sheetInfo.getRange(3, 7, infoRange.length, 2);
+    var scoresData = scoresRange.getValues();
+    var hasChanges = false;
+
     for (var i = 0; i < data.matches.length; i++) {
       var match = data.matches[i];
 
@@ -728,18 +748,23 @@ function syncLiveScores() {
               break;
             }
 
-            var row = j + 3;
-            // Update score (Cột G & H)
-            sheetInfo.getRange(row, 7).setValue(homeScore);
-            sheetInfo.getRange(row, 8).setValue(awayScore);
-
-            // Cập nhật trạng thái vào cột I (Cột 9)
-            // var newStatus = match.status === "FINISHED" ? "Kết thúc" : "Đang đá";
-            // sheetInfo.getRange(row, 9).setValue(newStatus);
+            // Cập nhật vào mảng bộ nhớ thay vì ghi trực tiếp xuống sheet
+            if (scoresData[j][0] !== homeScore || scoresData[j][1] !== awayScore) {
+              scoresData[j][0] = homeScore;
+              scoresData[j][1] = awayScore;
+              hasChanges = true;
+            }
+            
+            // Cập nhật trạng thái vào cột I (Cột 9) nếu cần (hiện tại đang bị comment)
+            // sheetInfo.getRange(j + 3, 9).setValue(newStatus);
             break;
           }
         }
       }
+    }
+
+    if (hasChanges) {
+      scoresRange.setValues(scoresData);
     }
   } catch (e) {
     console.error("Live score sync failed:", e);
