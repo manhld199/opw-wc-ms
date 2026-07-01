@@ -367,6 +367,7 @@ function getLeaderboard() {
         usedRocket: false,
         starImpact: 0,
         rocketImpact: 0,
+        remainingRocket: 200,
       };
     }
   }
@@ -407,6 +408,11 @@ function getLeaderboard() {
       if (cIdx >= 0 && betRange[j] && betRange[j][cIdx]) {
         var betVal = String(betRange[j][cIdx]).trim();
         matchBets[pName] = betVal;
+
+        var rMatch = betVal.match(/🚀(\d+)/);
+        if (rMatch) {
+          userStats[pName].remainingRocket -= parseInt(rMatch[1], 10);
+        }
 
         var cleanedBet = betVal.replace(/⭐\d+/, "").replace(/🚀\d+/, "").trim();
 
@@ -493,6 +499,7 @@ function getLeaderboard() {
       _hopeStarImpact: hopeStarImpact,
       _starImpact: userStats[playerName] ? userStats[playerName].starImpact : 0,
       _rocketImpact: userStats[playerName] ? userStats[playerName].rocketImpact : 0,
+      remainingRocket: userStats[playerName] ? userStats[playerName].remainingRocket : 200,
     });
   }
 
