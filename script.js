@@ -99,6 +99,8 @@ async function apiCall(action, params = {}) {
   const response = await fetch(GAS_URL, {
     method: "POST",
     body: formData,
+    credentials: "omit",
+    redirect: "follow"
   });
 
   const text = await response.text();
