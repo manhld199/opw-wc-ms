@@ -127,11 +127,30 @@ function getMatches(email) {
 
   var results = [];
 
+  var predictionRange = sheetPrediction ? sheetPrediction.getRange(3, 1, 100, 50).getValues() : [];
+  var validCols = [];
+  for (var i = 0; i < userData.length; i++) {
+    if (userData[i][0] && userData[i][2]) {
+      validCols.push(columnLetterToNumber(String(userData[i][2]).trim()) - 1);
+    }
+  }
+
   for (var j = 0; j < infoRange.length; j++) {
     if (infoRange[j][0] !== "" && infoRange[j][8] === "Chưa đá") {
       var row = infoRange[j];
       row.push(String(userBets[j][0] || "").trim());
       row.push(userPredictions.length > j ? String(userPredictions[j][0] || "").trim() : "");
+      
+      var numPredictions = 0;
+      if (predictionRange.length > j) {
+        for (var k = 0; k < validCols.length; k++) {
+          if (String(predictionRange[j][validCols[k]] || "").trim() !== "") {
+            numPredictions++;
+          }
+        }
+      }
+      row.push(numPredictions); // row[18]
+      
       results.push(row);
     }
   }
@@ -360,10 +379,14 @@ function submitScorePrediction(email, stt, prediction) {
     return "❌ Đã quá thời gian dự đoán!";
   }
 
-  // Thêm dấu nháy đơn để Google Sheets không tự động parse thành Ngày tháng (Date)
-  sheetPrediction.getRange(row, userColNum).setValue("'" + prediction);
-
-  return "✅ Đã lưu dự đoán tỉ số: " + prediction;
+  if (prediction === "") {
+    sheetPrediction.getRange(row, userColNum).clearContent();
+    return "✅ Đã hủy dự đoán tỉ số!";
+  } else {
+    // Thêm dấu nháy đơn để Google Sheets không tự động parse thành Ngày tháng (Date)
+    sheetPrediction.getRange(row, userColNum).setValue("'" + prediction);
+    return "✅ Đã lưu dự đoán tỉ số: " + prediction;
+  }
 }
 
 // --- HÀM LẤY CÁC TRẬN QUÁ KHỨ MỚI THÊM VÀO ---
@@ -399,12 +422,31 @@ function getPastMatches(email) {
 
   var results = [];
 
+  var predictionRange = sheetPrediction ? sheetPrediction.getRange(3, 1, 100, 50).getValues() : [];
+  var validCols = [];
+  for (var i = 0; i < userData.length; i++) {
+    if (userData[i][0] && userData[i][2]) {
+      validCols.push(columnLetterToNumber(String(userData[i][2]).trim()) - 1);
+    }
+  }
+
   for (var j = 0; j < infoRange.length; j++) {
     // Điều kiện: Lấy những trận đã có số STT và Trạng thái KHÁC "Chưa đá"
     if (infoRange[j][0] !== "" && infoRange[j][8] !== "Chưa đá") {
       var row = infoRange[j];
       row.push(String(userBets[j][0] || "").trim());
       row.push(userPredictions.length > j ? String(userPredictions[j][0] || "").trim() : "");
+      
+      var numPredictions = 0;
+      if (predictionRange.length > j) {
+        for (var k = 0; k < validCols.length; k++) {
+          if (String(predictionRange[j][validCols[k]] || "").trim() !== "") {
+            numPredictions++;
+          }
+        }
+      }
+      row.push(numPredictions); // row[18]
+      
       results.push(row);
     }
   }

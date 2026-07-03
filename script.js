@@ -450,6 +450,7 @@ function renderMatches() {
               </button>
             </div>
             ${row[17] ? `<div class="text-[10px] font-semibold text-emerald-600 mt-1">Đã đoán tỉ số: ${row[17]}</div>` : ''}
+            <div class="text-[10px] text-gray-500 mt-0.5">👥 Có <span class="font-bold text-gray-700">${row[18] || 0}</span> người dự đoán trận này.</div>
           </div>
         </div>
       `;
@@ -519,8 +520,10 @@ function renderMatches() {
                <span class="text-xs text-gray-500 font-bold">-</span>
                <input type="text" id="pred-a-${row[0]}" placeholder="${awayTeam.substring(0, 3).toUpperCase()}" value="${row[17] ? row[17].split('-')[1] : ''}" class="w-12 text-center text-xs font-bold border border-gray-200 rounded-lg p-1.5 outline-none focus:border-[#0F5132]" ${isDisabled}>
                <button onclick="submitPrediction(this, ${row[0]})" class="bg-gray-800 hover:bg-black text-white text-[10px] md:text-xs font-bold py-1.5 px-3 rounded-lg transition-colors whitespace-nowrap" ${isDisabled}>Gửi Tỉ số</button>
+               ${row[17] ? `<button onclick="cancelPrediction(this, ${row[0]})" class="bg-red-100 hover:bg-red-200 text-red-600 text-[10px] md:text-xs font-bold py-1.5 px-3 rounded-lg transition-colors whitespace-nowrap" ${isDisabled} title="Hủy dự đoán"><i class="ti ti-trash"></i></button>` : ''}
             </div>
             ${row[17] ? `<div class="text-[10px] font-semibold text-emerald-600 mt-0.5">Dự đoán của bạn: ${row[17]}</div>` : ''}
+            <div class="text-[10px] text-gray-500 mt-0.5">👥 Đã có <span class="font-bold text-gray-700">${row[18] || 0}</span> người tham gia dự đoán tỉ số.</div>
           </div>
         </div>
       `;
@@ -691,6 +694,26 @@ function submitPrediction(btn, stt) {
       showToast("Lỗi: " + err.message);
       console.error(err);
       btn.innerText = originalText;
+    });
+}
+
+function cancelPrediction(btn, stt) {
+  if (!confirm("Bạn có chắc chắn muốn hủy dự đoán tỉ số này?")) return;
+  const originalText = btn.innerHTML;
+  btn.innerHTML = "⏳";
+
+  apiCall("submitScorePrediction", {
+    stt: stt,
+    prediction: "",
+  })
+    .then((res) => {
+      showToast(typeof res === "string" ? res : JSON.stringify(res));
+      loadData(false);
+    })
+    .catch((err) => {
+      showToast("Lỗi: " + err.message);
+      console.error(err);
+      btn.innerHTML = originalText;
     });
 }
 
