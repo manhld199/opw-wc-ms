@@ -123,7 +123,7 @@ function getMatches(email) {
   var infoRange = sheetInfo.getRange(3, 1, 100, 16).getValues();
 
   var userBets = sheetBet.getRange(3, userColNum, 100, 1).getValues();
-  var userPredictions = sheetPrediction ? sheetPrediction.getRange(3, userColNum, 100, 1).getValues() : [];
+  var userPredictions = sheetPrediction ? sheetPrediction.getRange(3, userColNum, 100, 1).getDisplayValues() : [];
 
   var results = [];
 
@@ -360,7 +360,8 @@ function submitScorePrediction(email, stt, prediction) {
     return "❌ Đã quá thời gian dự đoán!";
   }
 
-  sheetPrediction.getRange(row, userColNum).setValue(prediction);
+  // Thêm dấu nháy đơn để Google Sheets không tự động parse thành Ngày tháng (Date)
+  sheetPrediction.getRange(row, userColNum).setValue("'" + prediction);
 
   return "✅ Đã lưu dự đoán tỉ số: " + prediction;
 }
@@ -394,7 +395,7 @@ function getPastMatches(email) {
   var infoRange = sheetInfo.getRange(3, 1, 100, 16).getValues();
 
   var userBets = sheetBet.getRange(3, userColNum, 100, 1).getValues();
-  var userPredictions = sheetPrediction ? sheetPrediction.getRange(3, userColNum, 100, 1).getValues() : [];
+  var userPredictions = sheetPrediction ? sheetPrediction.getRange(3, userColNum, 100, 1).getDisplayValues() : [];
 
   var results = [];
 
@@ -438,7 +439,7 @@ function getLeaderboard() {
   var infoRange = sheetInfo ? sheetInfo.getRange(3, 1, 100, 16).getValues() : [];
   var betRange = sheetBet ? sheetBet.getRange(3, 1, 100, 50).getValues() : [];
   var sheetPrediction = ss.getSheetByName("Dự đoán");
-  var predictionRange = sheetPrediction ? sheetPrediction.getRange(3, 1, 100, 50).getValues() : [];
+  var predictionRange = sheetPrediction ? sheetPrediction.getRange(3, 1, 100, 50).getDisplayValues() : [];
   var userData = sheetData ? sheetData.getRange("A2:C50").getValues() : [];
 
   // Xây dựng object user để lưu các chỉ số tính danh hiệu
@@ -766,7 +767,7 @@ function getMatchDetail(stt) {
 
     var colNum = columnLetterToNumber(colChar);
     var choice = String(sheetBet.getRange(matchRow, colNum).getValue() || "").trim();
-    var prediction = sheetPrediction ? String(sheetPrediction.getRange(matchRow, colNum).getValue() || "").trim() : "";
+    var prediction = sheetPrediction ? String(sheetPrediction.getRange(matchRow, colNum).getDisplayValue() || "").trim() : "";
 
     result.push({ name: name, choice: choice, prediction: prediction });
   }
