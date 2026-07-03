@@ -678,7 +678,7 @@ function submitPrediction(btn, stt) {
   var prediction = hScore + "-" + aScore;
   const originalText = btn.innerText;
   btn.innerText = "⏳...";
-  
+
   apiCall("submitScorePrediction", {
     stt: stt,
     prediction: prediction,
@@ -1100,7 +1100,7 @@ function openMatchDetail(stt) {
                 ? "▼ " + lowerTeam
                 : "—";
         }
-        
+
         var pred = String(v.prediction || "");
         if (pred) {
           choiceLabel += `<div class="mt-1"><span class="text-[10px] text-blue-700 font-bold bg-blue-100 px-1.5 py-0.5 rounded border border-blue-200">Dự đoán tỉ số: ${pred}</span></div>`;
