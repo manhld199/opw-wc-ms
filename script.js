@@ -101,7 +101,20 @@ async function apiCall(action, params = {}) {
     body: formData,
   });
 
-  return await response.json();
+  const text = await response.text();
+  try {
+    return JSON.parse(text);
+  } catch (err) {
+    if (text === "OK") {
+      if (action.startsWith("submit")) {
+        return "✅ Gửi thành công!";
+      } else {
+        // Fallback or silent error if it's a GET action
+        throw new Error("Server trả về OK thay vì dữ liệu JSON. Vui lòng thử lại.");
+      }
+    }
+    throw new Error("Lỗi phản hồi từ server: " + text);
+  }
 }
 
 // HÀM SWITCH TAB CẬP NHẬT 3 NÚT ĐIỀU HƯỚNG
