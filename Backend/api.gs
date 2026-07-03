@@ -552,6 +552,7 @@ function getLeaderboard() {
         else if (cleanedBet === "Cửa dưới") lowerCount++;
 
         totalBets++;
+        }
       }
     }
 
