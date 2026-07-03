@@ -465,7 +465,7 @@ function renderMatches() {
               </button>
             </div>
             ${row[17] ? `<div class="text-[10px] font-semibold text-emerald-600 mt-1">Đã đoán tỉ số: ${row[17]}</div>` : ''}
-            <div class="text-[10px] text-gray-500 mt-0.5">👥 Có <span class="font-bold text-gray-700">${row[18] || 0}</span> người dự đoán trận này.</div>
+            <div class="text-[10px] text-gray-500 mt-0.5">👥 Có <span class="font-bold text-gray-700">${row[18] || 0}</span> người dự đoán tỉ số.</div>
           </div>
         </div>
       `;
@@ -538,7 +538,7 @@ function renderMatches() {
                ${row[17] ? `<button onclick="cancelPrediction(this, ${row[0]})" class="bg-red-100 hover:bg-red-200 text-red-600 text-[10px] md:text-xs font-bold py-1.5 px-3 rounded-lg transition-colors whitespace-nowrap" ${isDisabled} title="Hủy dự đoán"><i class="ti ti-trash"></i></button>` : ''}
             </div>
             ${row[17] ? `<div class="text-[10px] font-semibold text-emerald-600 mt-0.5">Dự đoán của bạn: ${row[17]}</div>` : ''}
-            <div class="text-[10px] text-gray-500 mt-0.5">👥 Đã có <span class="font-bold text-gray-700">${row[18] || 0}</span> người tham gia dự đoán tỉ số.</div>
+            <div class="text-[10px] text-gray-500 mt-0.5">👥 Có <span class="font-bold text-gray-700">${row[18] || 0}</span> người dự đoán tỉ số.</div>
           </div>
         </div>
       `;
