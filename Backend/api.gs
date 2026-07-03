@@ -23,6 +23,8 @@ function doPost(e) {
       output = getMatchDetail(params.stt);
     } else if (action === "submitBet") {
       output = submitBet(email, params.stt, params.choice);
+    } else if (action === "submitScorePrediction") {
+      output = submitScorePrediction(email, params.stt, params.prediction);
     } else if (action === "getChartData") {
       output = getChartData();
     } else {
@@ -99,6 +101,7 @@ function getMatches(email) {
   var sheetInfo = ss.getSheetByName("Trận đấu");
   var sheetBet = ss.getSheetByName("Đặt cược");
   var sheetData = ss.getSheetByName("Data");
+  var sheetPrediction = ss.getSheetByName("Dự đoán");
 
   var userData = sheetData.getRange("A2:C50").getValues();
 
@@ -120,6 +123,7 @@ function getMatches(email) {
   var infoRange = sheetInfo.getRange(3, 1, 100, 16).getValues();
 
   var userBets = sheetBet.getRange(3, userColNum, 100, 1).getValues();
+  var userPredictions = sheetPrediction ? sheetPrediction.getRange(3, userColNum, 100, 1).getValues() : [];
 
   var results = [];
 
@@ -127,6 +131,7 @@ function getMatches(email) {
     if (infoRange[j][0] !== "" && infoRange[j][8] === "Chưa đá") {
       var row = infoRange[j];
       row.push(String(userBets[j][0] || "").trim());
+      row.push(userPredictions.length > j ? String(userPredictions[j][0] || "").trim() : "");
       results.push(row);
     }
   }
@@ -284,6 +289,82 @@ function submitBet(email, stt, choice) {
   return "✅ Đã xác nhận: " + choice;
 }
 
+function submitScorePrediction(email, stt, prediction) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  var sheetInfo = ss.getSheetByName("Trận đấu");
+  var sheetPrediction = ss.getSheetByName("Dự đoán");
+  var sheetData = ss.getSheetByName("Data");
+
+  if (!sheetPrediction) {
+    return "Lỗi: Không tìm thấy sheet Dự đoán!";
+  }
+
+  var userData = sheetData.getRange("A2:C50").getValues();
+
+  var userName = "Người chơi";
+  var userColChar = "";
+
+  for (var i = 0; i < userData.length; i++) {
+    if (userData[i][0] == email) {
+      userName = userData[i][1];
+      userColChar = userData[i][2];
+      break;
+    }
+  }
+
+  if (userColChar === "") {
+    return "Lỗi: Tài khoản chưa cấu hình cột!";
+  }
+
+  var userColNum = columnLetterToNumber(userColChar);
+
+  var dataInfo = sheetInfo.getRange("A3:P100").getValues();
+
+  var row = -1;
+  var matchData = null;
+
+  for (var j = 0; j < dataInfo.length; j++) {
+    if (dataInfo[j][0] == stt) {
+      row = j + 3;
+      matchData = dataInfo[j];
+      break;
+    }
+  }
+
+  if (row == -1) {
+    return "Lỗi: Không tìm thấy trận đấu!";
+  }
+
+  var timeRaw = matchData[3];
+  var matchTime;
+  if (timeRaw instanceof Date) {
+    matchTime = timeRaw;
+  } else {
+    var timeStr = String(timeRaw).trim();
+    var m = timeStr.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{2})/);
+    if (m) {
+      matchTime = new Date(
+        parseInt(m[3], 10),
+        parseInt(m[2], 10) - 1,
+        parseInt(m[1], 10),
+        parseInt(m[4], 10),
+        parseInt(m[5], 10)
+      );
+    } else {
+      matchTime = new Date(timeStr);
+    }
+  }
+
+  if (new Date() > new Date(matchTime.getTime() - 1 * 60 * 1000)) {
+    return "❌ Đã quá thời gian dự đoán!";
+  }
+
+  sheetPrediction.getRange(row, userColNum).setValue(prediction);
+
+  return "✅ Đã lưu dự đoán tỉ số: " + prediction;
+}
+
 // --- HÀM LẤY CÁC TRẬN QUÁ KHỨ MỚI THÊM VÀO ---
 function getPastMatches(email) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -291,6 +372,7 @@ function getPastMatches(email) {
   var sheetInfo = ss.getSheetByName("Trận đấu");
   var sheetBet = ss.getSheetByName("Đặt cược");
   var sheetData = ss.getSheetByName("Data");
+  var sheetPrediction = ss.getSheetByName("Dự đoán");
 
   var userData = sheetData.getRange("A2:C50").getValues();
 
@@ -312,6 +394,7 @@ function getPastMatches(email) {
   var infoRange = sheetInfo.getRange(3, 1, 100, 16).getValues();
 
   var userBets = sheetBet.getRange(3, userColNum, 100, 1).getValues();
+  var userPredictions = sheetPrediction ? sheetPrediction.getRange(3, userColNum, 100, 1).getValues() : [];
 
   var results = [];
 
@@ -320,6 +403,7 @@ function getPastMatches(email) {
     if (infoRange[j][0] !== "" && infoRange[j][8] !== "Chưa đá") {
       var row = infoRange[j];
       row.push(String(userBets[j][0] || "").trim());
+      row.push(userPredictions.length > j ? String(userPredictions[j][0] || "").trim() : "");
       results.push(row);
     }
   }
@@ -353,6 +437,8 @@ function getLeaderboard() {
   // Lấy dữ liệu Trận đấu và Đặt cược để tính danh hiệu
   var infoRange = sheetInfo ? sheetInfo.getRange(3, 1, 100, 16).getValues() : [];
   var betRange = sheetBet ? sheetBet.getRange(3, 1, 100, 50).getValues() : [];
+  var sheetPrediction = ss.getSheetByName("Dự đoán");
+  var predictionRange = sheetPrediction ? sheetPrediction.getRange(3, 1, 100, 50).getValues() : [];
   var userData = sheetData ? sheetData.getRange("A2:C50").getValues() : [];
 
   // Xây dựng object user để lưu các chỉ số tính danh hiệu
@@ -368,6 +454,7 @@ function getLeaderboard() {
         starImpact: 0,
         rocketImpact: 0,
         remainingRocket: 200,
+        predictionPoints: 0,
       };
     }
   }
@@ -403,10 +490,32 @@ function getLeaderboard() {
     var totalBets = 0;
     var matchBets = {};
 
+    var matchPredictions = {};
+    var numPredictions = 0;
+    var correctPredictions = [];
+    var actualHomeScore = parseInt(infoRange[j][6]);
+    var actualAwayScore = parseInt(infoRange[j][7]);
+    var hasValidActualScore = !isNaN(actualHomeScore) && !isNaN(actualAwayScore) && matchStatus.includes("Kết thúc");
+    var actualScoreStr = hasValidActualScore ? (actualHomeScore + "-" + actualAwayScore) : "";
+
     for (var pName in userStats) {
       var cIdx = userStats[pName].colIndex;
-      if (cIdx >= 0 && betRange[j] && betRange[j][cIdx]) {
-        var betVal = String(betRange[j][cIdx]).trim();
+      if (cIdx >= 0) {
+        // Xử lý Dự đoán Tỉ số
+        if (predictionRange[j] && predictionRange[j][cIdx]) {
+          var predVal = String(predictionRange[j][cIdx]).trim();
+          if (predVal) {
+            matchPredictions[pName] = predVal;
+            numPredictions++;
+            if (hasValidActualScore && predVal === actualScoreStr) {
+              correctPredictions.push(pName);
+            }
+          }
+        }
+
+        // Xử lý Đặt cược
+        if (betRange[j] && betRange[j][cIdx]) {
+          var betVal = String(betRange[j][cIdx]).trim();
         matchBets[pName] = betVal;
 
         var rMatch = betVal.match(/🚀(\d+)/);
@@ -446,6 +555,20 @@ function getLeaderboard() {
       }
     }
 
+    // Tính điểm Dự đoán Tỉ số
+    if (hasValidActualScore && numPredictions > 0) {
+      var pool = numPredictions * 10;
+      for (var p in matchPredictions) {
+        if (correctPredictions.length > 0) {
+          if (correctPredictions.includes(p)) {
+            userStats[p].predictionPoints += Math.floor(pool / correctPredictions.length) - 10;
+          } else {
+            userStats[p].predictionPoints -= 10;
+          }
+        }
+      }
+    }
+
     // Trận có kết quả và có người cược
     if (actualWinningChoice && totalBets > 0) {
       var winningChoiceCount = actualWinningChoice === "Cửa trên" ? upperCount : lowerCount;
@@ -470,6 +593,10 @@ function getLeaderboard() {
     var losses = Number(dataRange[i][5]) || 0;
     var total = wins + losses;
     var totalScore = Number(dataRange[i][2]) || 0;
+
+    if (userStats[playerName]) {
+      totalScore += userStats[playerName].predictionPoints;
+    }
 
     var winRate = total > 0 ? wins / total : 0;
     var loseRate = total > 0 ? losses / total : 0;
@@ -499,6 +626,7 @@ function getLeaderboard() {
       _hopeStarImpact: hopeStarImpact,
       _starImpact: userStats[playerName] ? userStats[playerName].starImpact : 0,
       _rocketImpact: userStats[playerName] ? userStats[playerName].rocketImpact : 0,
+      _scorePredictionPoints: userStats[playerName] ? userStats[playerName].predictionPoints : 0,
       remainingRocket: userStats[playerName] ? userStats[playerName].remainingRocket : 200,
     });
   }
@@ -605,6 +733,7 @@ function columnLetterToNumber(col) {
 function getMatchDetail(stt) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheetBet = ss.getSheetByName("Đặt cược");
+  var sheetPrediction = ss.getSheetByName("Dự đoán");
   var sheetData = ss.getSheetByName("Data");
 
   if (!sheetBet || !sheetData) return { error: "Không tìm thấy sheet" };
@@ -636,8 +765,9 @@ function getMatchDetail(stt) {
 
     var colNum = columnLetterToNumber(colChar);
     var choice = String(sheetBet.getRange(matchRow, colNum).getValue() || "").trim();
+    var prediction = sheetPrediction ? String(sheetPrediction.getRange(matchRow, colNum).getValue() || "").trim() : "";
 
-    result.push({ name: name, choice: choice });
+    result.push({ name: name, choice: choice, prediction: prediction });
   }
 
   return result;

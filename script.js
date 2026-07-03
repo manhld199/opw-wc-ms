@@ -440,13 +440,16 @@ function renderMatches() {
             </div>
           </div>
 
-          <div class="flex gap-2 w-full md:w-auto">
-            <button class="flex-1 md:w-28 py-2 md:py-2.5 rounded-xl border border-gray-100 text-[11px] md:text-xs text-gray-400 font-semibold bg-gray-50/50 cursor-not-allowed ${betValue === "Cửa trên" ? "border-emerald-200 bg-emerald-50 text-emerald-700 font-bold" : ""}" disabled>
-              ▲ ${upperTeam} ${betValue === "Cửa trên" && hasHopeStar ? `⭐${usedStarOnThisMatch}` : (betValue === "Cửa trên" && hasRocket ? `🚀${usedRocketOnThisMatch}` : "")}
-            </button>
-            <button class="flex-1 md:w-28 py-2 md:py-2.5 rounded-xl border border-gray-100 text-[11px] md:text-xs text-gray-400 font-semibold bg-gray-50/50 cursor-not-allowed ${betValue === "Cửa dưới" ? "border-emerald-200 bg-emerald-50 text-emerald-700 font-bold" : ""}" disabled>
-              ▼ ${lowerTeam} ${betValue === "Cửa dưới" && hasHopeStar ? `⭐${usedStarOnThisMatch}` : (betValue === "Cửa dưới" && hasRocket ? `🚀${usedRocketOnThisMatch}` : "")}
-            </button>
+          <div class="flex flex-col gap-2 w-full md:w-auto items-center md:items-end">
+            <div class="flex gap-2 w-full md:w-auto">
+              <button class="flex-1 md:w-28 py-2 md:py-2.5 rounded-xl border border-gray-100 text-[11px] md:text-xs text-gray-400 font-semibold bg-gray-50/50 cursor-not-allowed ${betValue === "Cửa trên" ? "border-emerald-200 bg-emerald-50 text-emerald-700 font-bold" : ""}" disabled>
+                ▲ ${upperTeam} ${betValue === "Cửa trên" && hasHopeStar ? `⭐${usedStarOnThisMatch}` : (betValue === "Cửa trên" && hasRocket ? `🚀${usedRocketOnThisMatch}` : "")}
+              </button>
+              <button class="flex-1 md:w-28 py-2 md:py-2.5 rounded-xl border border-gray-100 text-[11px] md:text-xs text-gray-400 font-semibold bg-gray-50/50 cursor-not-allowed ${betValue === "Cửa dưới" ? "border-emerald-200 bg-emerald-50 text-emerald-700 font-bold" : ""}" disabled>
+                ▼ ${lowerTeam} ${betValue === "Cửa dưới" && hasHopeStar ? `⭐${usedStarOnThisMatch}` : (betValue === "Cửa dưới" && hasRocket ? `🚀${usedRocketOnThisMatch}` : "")}
+              </button>
+            </div>
+            ${row[17] ? `<div class="text-[10px] font-semibold text-emerald-600 mt-1">Đã đoán tỉ số: ${row[17]}</div>` : ''}
           </div>
         </div>
       `;
@@ -511,6 +514,13 @@ function renderMatches() {
               </select>
               <input type="number" id="rocket-input-${row[0]}" step="10" min="20" max="${currentRemainingRocket + (usedRocketOnThisMatch || 0)}" value="${usedRocketOnThisMatch || ""}" placeholder="${parseInt(row[0]) >= 69 ? '🚀 Tên lửa (≥20đ)' : '🚀 Chỉ Knockout'}" class="flex-1 text-[10px] md:text-xs font-bold bg-purple-50 text-purple-700 border border-purple-200 rounded-lg px-2 md:px-3 py-1.5 outline-none hover:bg-purple-100 transition-colors w-28 disabled:bg-gray-100 disabled:text-gray-400 disabled:border-gray-200 disabled:cursor-not-allowed" ${isDisabled || parseInt(row[0]) < 69 ? 'disabled' : ''} oninput="onRocketInputChange(this, ${row[0]})" title="${parseInt(row[0]) < 69 ? 'Tên lửa hi vọng chỉ được dùng từ vòng Knockout' : ''}">
             </div>
+            <div class="flex gap-2 items-center mt-1 w-full md:w-auto">
+               <input type="text" id="pred-h-${row[0]}" placeholder="CN" value="${row[17] ? row[17].split('-')[0] : ''}" class="w-10 text-center text-xs font-bold border border-gray-200 rounded-lg p-1.5 outline-none focus:border-[#0F5132]" ${isDisabled}>
+               <span class="text-xs text-gray-500 font-bold">-</span>
+               <input type="text" id="pred-a-${row[0]}" placeholder="Khách" value="${row[17] ? row[17].split('-')[1] : ''}" class="w-12 text-center text-xs font-bold border border-gray-200 rounded-lg p-1.5 outline-none focus:border-[#0F5132]" ${isDisabled}>
+               <button onclick="submitPrediction(this, ${row[0]})" class="bg-gray-800 hover:bg-black text-white text-[10px] md:text-xs font-bold py-1.5 px-3 rounded-lg transition-colors whitespace-nowrap" ${isDisabled}>Gửi Tỉ số</button>
+            </div>
+            ${row[17] ? `<div class="text-[10px] font-semibold text-emerald-600 mt-0.5">Dự đoán của bạn: ${row[17]}</div>` : ''}
           </div>
         </div>
       `;
@@ -585,6 +595,7 @@ function loadLeaderboardData() {
               ${badgesHtml}
             </td>
             <td class="p-4 text-center font-extrabold text-[#0F5132]">${player.totalScore}</td>
+            <td class="p-4 text-center font-bold text-blue-600">${player._scorePredictionPoints || 0}</td>
             <td class="p-4 text-center font-bold text-purple-600">🚀 ${player.remainingRocket !== undefined ? player.remainingRocket : '--'}</td>
             <td class="p-4 text-center font-bold text-green-600">${player.winMatches}</td>
             <td class="p-4 text-center font-bold text-red-500">${player.loseMatches}</td>
@@ -642,6 +653,35 @@ function bet(btn, stt, choice) {
   apiCall("submitBet", {
     stt: stt,
     choice: choice,
+  })
+    .then((res) => {
+      showToast(typeof res === "string" ? res : JSON.stringify(res));
+      loadData(false);
+    })
+    .catch((err) => {
+      showToast("Lỗi: " + err.message);
+      console.error(err);
+      btn.innerText = originalText;
+    });
+}
+
+function submitPrediction(btn, stt) {
+  var hInput = document.getElementById("pred-h-" + stt);
+  var aInput = document.getElementById("pred-a-" + stt);
+  if (!hInput || !aInput) return;
+  var hScore = hInput.value.trim();
+  var aScore = aInput.value.trim();
+  if (hScore === "" || aScore === "") {
+    showToast("❌ Vui lòng nhập đầy đủ tỉ số!");
+    return;
+  }
+  var prediction = hScore + "-" + aScore;
+  const originalText = btn.innerText;
+  btn.innerText = "⏳...";
+  
+  apiCall("submitScorePrediction", {
+    stt: stt,
+    prediction: prediction,
   })
     .then((res) => {
       showToast(typeof res === "string" ? res : JSON.stringify(res));
@@ -1059,6 +1099,11 @@ function openMatchDetail(stt) {
               : cleaned === "Cửa dưới"
                 ? "▼ " + lowerTeam
                 : "—";
+        }
+        
+        var pred = String(v.prediction || "");
+        if (pred) {
+          choiceLabel += `<div class="mt-1"><span class="text-[10px] text-blue-700 font-bold bg-blue-100 px-1.5 py-0.5 rounded border border-blue-200">Dự đoán tỉ số: ${pred}</span></div>`;
         }
 
         var choiceClass =
