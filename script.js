@@ -394,10 +394,46 @@ function renderMatches() {
       timeStr = tMatch[2];
     }
 
-    var isKnockout = parseInt(row[0]) >= 69;
-    var stageBadge = isKnockout
-      ? '<span class="text-[9px] font-bold px-1.5 py-0.5 bg-purple-100 text-purple-700 border border-purple-200 rounded-md ml-1 shadow-sm">🏆 Knockout</span>'
-      : '<span class="text-[9px] font-bold px-1.5 py-0.5 bg-gray-100 text-gray-500 border border-gray-200 rounded-md ml-1">Vòng bảng</span>';
+    var roundName = String(row[1] || "").trim();
+    var stageBadge = "";
+    if (roundName.toLowerCase().includes("vòng bảng")) {
+      stageBadge = '<span class="text-[9px] font-bold px-1.5 py-0.5 bg-gray-100 text-gray-500 border border-gray-200 rounded-md ml-1">' + roundName + '</span>';
+    } else if (roundName.toLowerCase().includes("vòng 32")) {
+      stageBadge = '<span class="text-[9px] font-bold px-1.5 py-0.5 bg-blue-100 text-blue-700 border border-blue-200 rounded-md ml-1 shadow-sm">⚔️ ' + roundName + '</span>';
+    } else if (roundName.toLowerCase().includes("vòng 16")) {
+      stageBadge = '<span class="text-[9px] font-bold px-1.5 py-0.5 bg-purple-100 text-purple-700 border border-purple-200 rounded-md ml-1 shadow-sm">🔥 ' + roundName + '</span>';
+    } else {
+      stageBadge = '<span class="text-[9px] font-bold px-1.5 py-0.5 bg-amber-100 text-amber-700 border border-amber-200 rounded-md ml-1 shadow-sm">🏆 ' + roundName + '</span>';
+    }
+    
+    var isPoolStage = parseInt(row[0]) >= 85;
+
+    var poolStatsHtml = '';
+    var homePoolHtml = '';
+    var awayPoolHtml = '';
+    
+    if (isPoolStage) {
+      if (currentTab === "past") {
+        var upperCount = row[19] || 0;
+        var lowerCount = row[20] || 0;
+        var totalPlayers = row[21] || 20;
+
+        var upperWin = Math.floor(200 / Math.max(upperCount, 1));
+        var upperLose = -Math.floor(200 / Math.max(totalPlayers - upperCount, 1));
+        var lowerWin = Math.floor(200 / Math.max(lowerCount, 1));
+        var lowerLose = -Math.floor(200 / Math.max(totalPlayers - lowerCount, 1));
+
+        var homePayout = homeTeam === upperTeam ? `Thắng: +${upperWin}đ | Thua: ${upperLose}đ` : `Thắng: +${lowerWin}đ | Thua: ${lowerLose}đ`;
+        var awayPayout = awayTeam === upperTeam ? `Thắng: +${upperWin}đ | Thua: ${upperLose}đ` : `Thắng: +${lowerWin}đ | Thua: ${lowerLose}đ`;
+        
+        homePoolHtml = `<p class="text-[9px] font-bold text-indigo-600 mt-1 whitespace-nowrap bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100">${homePayout}</p>`;
+        awayPoolHtml = `<p class="text-[9px] font-bold text-indigo-600 mt-1 whitespace-nowrap bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100">${awayPayout}</p>`;
+        
+        poolStatsHtml = `<div class="text-[10px] text-gray-500 mt-0.5">💰 Pool: Trên <span class="font-bold text-gray-700">${upperCount}</span> - Dưới <span class="font-bold text-gray-700">${lowerCount}</span> / <span class="font-bold text-gray-700">${totalPlayers}</span></div>`;
+      } else {
+        poolStatsHtml = `<div class="text-[10px] font-bold text-indigo-600 mt-1 bg-indigo-50 px-2 py-1 rounded border border-indigo-100 inline-block">💰 Chế độ Pool: 200đ</div>`;
+      }
+    }
 
     var unbetClass = currentTab === "active" && betValue === "" ? "row-unbet" : "";
     var unbetIcon =
@@ -436,6 +472,7 @@ function renderMatches() {
               <div class="text-center md:text-left flex-1 md:flex-none md:min-w-[120px]">
                 <h3 class="text-sm md:text-base font-bold text-gray-800 flex items-center justify-center md:justify-start flex-wrap gap-1">${homeTeam}${homeBadge}</h3>
                 <p class="text-[10px] font-bold text-gray-400 mt-0.5 uppercase">CHỦ NHÀ</p>
+                ${homePoolHtml}
               </div>
               <div class="flex flex-col items-center shrink-0 px-1 md:px-0">
                 <div class="flex items-center gap-1.5 md:gap-3">
@@ -451,6 +488,7 @@ function renderMatches() {
               <div class="text-center md:text-right flex-1 md:flex-none md:min-w-[120px]">
                 <h3 class="text-sm md:text-base font-bold text-gray-800 flex items-center justify-center md:justify-end flex-wrap gap-1">${awayBadge}${awayTeam}</h3>
                 <p class="text-[10px] font-bold text-gray-400 mt-0.5 uppercase">KHÁCH</p>
+                ${awayPoolHtml}
               </div>
             </div>
           </div>
@@ -466,6 +504,7 @@ function renderMatches() {
             </div>
             ${row[17] ? `<div class="text-[10px] font-semibold text-emerald-600 mt-1">Đã đoán tỉ số: ${row[17]}</div>` : ''}
             <div class="text-[10px] text-gray-500 mt-0.5">👥 Có <span class="font-bold text-gray-700">${row[18] || 0}</span> người dự đoán tỉ số.</div>
+            ${poolStatsHtml}
           </div>
         </div>
       `;
@@ -490,6 +529,7 @@ function renderMatches() {
               <div class="text-center md:text-left flex-1 md:flex-none md:min-w-[120px]">
                 <h3 class="text-sm md:text-base font-bold text-gray-800 flex items-center justify-center md:justify-start flex-wrap gap-1">${homeTeam}${homeBadge}</h3>
                 <p class="text-[10px] font-bold text-gray-400 mt-0.5 uppercase">CHỦ NHÀ</p>
+                ${homePoolHtml}
               </div>
               
               <div class="flex flex-col items-center shrink-0 px-1 md:px-0">
@@ -507,6 +547,7 @@ function renderMatches() {
               <div class="text-center md:text-right flex-1 md:flex-none md:min-w-[120px]">
                 <h3 class="text-sm md:text-base font-bold text-gray-800 flex items-center justify-center md:justify-end flex-wrap gap-1">${awayBadge}${awayTeam}</h3>
                 <p class="text-[10px] font-bold text-gray-400 mt-0.5 uppercase">KHÁCH</p>
+                ${awayPoolHtml}
               </div>
             </div>
           </div>
@@ -520,8 +561,8 @@ function renderMatches() {
                 ▼ ${lowerTeam}
               </button>
             </div>
-            <div class="flex gap-2 items-center mt-1 w-full md:w-auto">
-              <select id="star-select-${row[0]}" onchange="onStarSelectChange(this, ${row[0]})" class="${isKnockout ? 'hidden' : 'flex-1'} text-[10px] md:text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200 rounded-lg px-2 md:px-3 py-1.5 outline-none cursor-pointer hover:bg-amber-100 transition-colors" ${isDisabled}>
+            <div class="flex gap-2 items-center mt-1 w-full md:w-auto ${isPoolStage ? 'hidden' : ''}">
+              <select id="star-select-${row[0]}" onchange="onStarSelectChange(this, ${row[0]})" class="flex-1 text-[10px] md:text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200 rounded-lg px-2 md:px-3 py-1.5 outline-none cursor-pointer hover:bg-amber-100 transition-colors" ${isDisabled}>
                 <option value="">Sao (10đ)</option>
                 <option value="20" ${usedStarOnThisMatch === 20 ? "selected" : !currentAvailableStars.includes(20) ? "disabled" : ""}>⭐ 20đ ${!currentAvailableStars.includes(20) && usedStarOnThisMatch !== 20 ? "(Hết)" : ""}</option>
                 <option value="30" ${usedStarOnThisMatch === 30 ? "selected" : !currentAvailableStars.includes(30) ? "disabled" : ""}>⭐ 30đ ${!currentAvailableStars.includes(30) && usedStarOnThisMatch !== 30 ? "(Hết)" : ""}</option>
@@ -539,6 +580,7 @@ function renderMatches() {
             </div>
             ${row[17] ? `<div class="text-[10px] font-semibold text-emerald-600 mt-0.5">Dự đoán của bạn: ${row[17]}</div>` : ''}
             <div class="text-[10px] text-gray-500 mt-0.5">👥 Có <span class="font-bold text-gray-700">${row[18] || 0}</span> người dự đoán tỉ số.</div>
+            ${poolStatsHtml}
           </div>
         </div>
       `;

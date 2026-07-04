@@ -135,6 +135,8 @@ function getMatches(email) {
     }
   }
 
+  var allBets = sheetBet.getRange(3, 1, 100, 50).getValues();
+
   for (var j = 0; j < infoRange.length; j++) {
     if (infoRange[j][0] !== "" && infoRange[j][8] === "Chưa đá") {
       var row = infoRange[j];
@@ -150,6 +152,17 @@ function getMatches(email) {
         }
       }
       row.push(numPredictions); // row[18]
+
+      var upperCount = 0;
+      var lowerCount = 0;
+      for (var k = 0; k < validCols.length; k++) {
+        var betStr = String(allBets[j][validCols[k]] || "").trim();
+        if (betStr.includes("Cửa trên")) upperCount++;
+        else if (betStr.includes("Cửa dưới")) lowerCount++;
+      }
+      row.push(upperCount); // row[19]
+      row.push(lowerCount); // row[20]
+      row.push(validCols.length); // row[21]
       
       results.push(row);
     }
@@ -430,6 +443,8 @@ function getPastMatches(email) {
     }
   }
 
+  var allBets = sheetBet.getRange(3, 1, 100, 50).getValues();
+
   for (var j = 0; j < infoRange.length; j++) {
     // Điều kiện: Lấy những trận đã có số STT và Trạng thái KHÁC "Chưa đá"
     if (infoRange[j][0] !== "" && infoRange[j][8] !== "Chưa đá") {
@@ -446,6 +461,17 @@ function getPastMatches(email) {
         }
       }
       row.push(numPredictions); // row[18]
+
+      var upperCount = 0;
+      var lowerCount = 0;
+      for (var k = 0; k < validCols.length; k++) {
+        var betStr = String(allBets[j][validCols[k]] || "").trim();
+        if (betStr.includes("Cửa trên")) upperCount++;
+        else if (betStr.includes("Cửa dưới")) lowerCount++;
+      }
+      row.push(upperCount); // row[19]
+      row.push(lowerCount); // row[20]
+      row.push(validCols.length); // row[21]
       
       results.push(row);
     }
@@ -648,7 +674,7 @@ function getLeaderboard() {
     var maxWinStreak = Number(dataRange[i][10]) || 0;
     var maxLoseStreak = Number(dataRange[i][11]) || 0;
 
-    var hopeStarImpact = totalScore - (wins * 10 - losses * 10);
+    var hopeStarImpact = userStats[playerName] ? (userStats[playerName].starImpact + userStats[playerName].rocketImpact) : 0;
 
     leaderboard.push({
       name: playerName,
