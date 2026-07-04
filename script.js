@@ -394,7 +394,7 @@ function renderMatches() {
       timeStr = tMatch[2];
     }
 
-    var roundName = String(row[1] || "").trim();
+    var roundName = String(row[2] || "").trim();
     var stageBadge = "";
     if (roundName.toLowerCase().includes("vòng bảng")) {
       stageBadge = '<span class="text-[9px] font-bold px-1.5 py-0.5 bg-gray-100 text-gray-500 border border-gray-200 rounded-md ml-1">' + roundName + '</span>';
