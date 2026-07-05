@@ -100,7 +100,7 @@ async function apiCall(action, params = {}) {
     method: "POST",
     body: formData,
     credentials: "omit",
-    redirect: "follow",
+    redirect: "follow"
   });
 
   const text = await response.text();
@@ -397,32 +397,20 @@ function renderMatches() {
     var roundName = String(row[2] || "").trim();
     var stageBadge = "";
     if (roundName.toLowerCase().includes("vòng bảng")) {
-      stageBadge =
-        '<span class="text-[9px] font-bold px-1.5 py-0.5 bg-gray-100 text-gray-500 border border-gray-200 rounded-md ml-1">' +
-        roundName +
-        "</span>";
+      stageBadge = '<span class="text-[9px] font-bold px-1.5 py-0.5 bg-gray-100 text-gray-500 border border-gray-200 rounded-md ml-1">' + roundName + '</span>';
     } else if (roundName.toLowerCase().includes("vòng 32")) {
-      stageBadge =
-        '<span class="text-[9px] font-bold px-1.5 py-0.5 bg-blue-100 text-blue-700 border border-blue-200 rounded-md ml-1 shadow-sm">⚔️ ' +
-        roundName +
-        "</span>";
+      stageBadge = '<span class="text-[9px] font-bold px-1.5 py-0.5 bg-blue-100 text-blue-700 border border-blue-200 rounded-md ml-1 shadow-sm">⚔️ ' + roundName + '</span>';
     } else if (roundName.toLowerCase().includes("vòng 16")) {
-      stageBadge =
-        '<span class="text-[9px] font-bold px-1.5 py-0.5 bg-purple-100 text-purple-700 border border-purple-200 rounded-md ml-1 shadow-sm">🔥 ' +
-        roundName +
-        "</span>";
+      stageBadge = '<span class="text-[9px] font-bold px-1.5 py-0.5 bg-purple-100 text-purple-700 border border-purple-200 rounded-md ml-1 shadow-sm">🔥 ' + roundName + '</span>';
     } else {
-      stageBadge =
-        '<span class="text-[9px] font-bold px-1.5 py-0.5 bg-amber-100 text-amber-700 border border-amber-200 rounded-md ml-1 shadow-sm">🏆 ' +
-        roundName +
-        "</span>";
+      stageBadge = '<span class="text-[9px] font-bold px-1.5 py-0.5 bg-amber-100 text-amber-700 border border-amber-200 rounded-md ml-1 shadow-sm">🏆 ' + roundName + '</span>';
     }
 
     var isPoolStage = parseInt(row[0]) >= 85;
 
-    var poolStatsHtml = "";
-    var homePoolHtml = "";
-    var awayPoolHtml = "";
+    var poolStatsHtml = '';
+    var homePoolHtml = '';
+    var awayPoolHtml = '';
 
     if (isPoolStage) {
       if (currentTab === "past") {
@@ -430,19 +418,11 @@ function renderMatches() {
         var lowerCount = row[20] || 0;
         var totalPlayers = row[21] || 20;
 
-        var upperWin = Math.floor(300 / Math.max(upperCount, 1));
-        var upperLose = -Math.floor(300 / Math.max(totalPlayers - upperCount, 1));
-        var lowerWin = Math.floor(300 / Math.max(lowerCount, 1));
-        var lowerLose = -Math.floor(300 / Math.max(totalPlayers - lowerCount, 1));
+        var upperAvg = Math.round(300 / Math.max(upperCount, 1));
+        var lowerAvg = Math.round(300 / Math.max(lowerCount, 1));
 
-        var homePayout =
-          homeTeam === upperTeam
-            ? `Thắng: +${upperWin}đ | Thua: ${upperLose}đ`
-            : `Thắng: +${lowerWin}đ | Thua: ${lowerLose}đ`;
-        var awayPayout =
-          awayTeam === upperTeam
-            ? `Thắng: +${upperWin}đ | Thua: ${upperLose}đ`
-            : `Thắng: +${lowerWin}đ | Thua: ${lowerLose}đ`;
+        var homePayout = homeTeam === upperTeam ? `Biến động: ±${upperAvg}đ` : `Biến động: ±${lowerAvg}đ`;
+        var awayPayout = awayTeam === upperTeam ? `Biến động: ±${upperAvg}đ` : `Biến động: ±${lowerAvg}đ`;
 
         homePoolHtml = `<p class="text-[9px] font-bold text-indigo-600 mt-1 whitespace-nowrap bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100">${homePayout}</p>`;
         awayPoolHtml = `<p class="text-[9px] font-bold text-indigo-600 mt-1 whitespace-nowrap bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100">${awayPayout}</p>`;
@@ -514,13 +494,13 @@ function renderMatches() {
           <div class="flex flex-col gap-2 w-full md:w-auto items-center md:items-end">
             <div class="flex gap-2 w-full md:w-auto">
               <button class="flex-1 md:w-28 py-2 md:py-2.5 rounded-xl border border-gray-100 text-[11px] md:text-xs text-gray-400 font-semibold bg-gray-50/50 cursor-not-allowed ${betValue === "Cửa trên" ? "border-emerald-200 bg-emerald-50 text-emerald-700 font-bold" : ""}" disabled>
-                ▲ ${upperTeam} ${betValue === "Cửa trên" && hasHopeStar ? `⭐${usedStarOnThisMatch}` : betValue === "Cửa trên" && hasRocket ? `🚀${usedRocketOnThisMatch}` : ""}
+                ▲ ${upperTeam} ${betValue === "Cửa trên" && hasHopeStar ? `⭐${usedStarOnThisMatch}` : (betValue === "Cửa trên" && hasRocket ? `🚀${usedRocketOnThisMatch}` : "")}
               </button>
               <button class="flex-1 md:w-28 py-2 md:py-2.5 rounded-xl border border-gray-100 text-[11px] md:text-xs text-gray-400 font-semibold bg-gray-50/50 cursor-not-allowed ${betValue === "Cửa dưới" ? "border-emerald-200 bg-emerald-50 text-emerald-700 font-bold" : ""}" disabled>
-                ▼ ${lowerTeam} ${betValue === "Cửa dưới" && hasHopeStar ? `⭐${usedStarOnThisMatch}` : betValue === "Cửa dưới" && hasRocket ? `🚀${usedRocketOnThisMatch}` : ""}
+                ▼ ${lowerTeam} ${betValue === "Cửa dưới" && hasHopeStar ? `⭐${usedStarOnThisMatch}` : (betValue === "Cửa dưới" && hasRocket ? `🚀${usedRocketOnThisMatch}` : "")}
               </button>
             </div>
-            ${row[17] ? `<div class="text-[10px] font-semibold text-emerald-600 mt-1">Đã đoán tỉ số: ${row[17]}</div>` : ""}
+            ${row[17] ? `<div class="text-[10px] font-semibold text-emerald-600 mt-1">Đã đoán tỉ số: ${row[17]}</div>` : ''}
             <div class="text-[10px] text-gray-500 mt-0.5">👥 Có <span class="font-bold text-gray-700">${row[18] || 0}</span> người dự đoán tỉ số.</div>
             ${poolStatsHtml}
           </div>
@@ -579,7 +559,7 @@ function renderMatches() {
                 ▼ ${lowerTeam}
               </button>
             </div>
-            <div class="flex gap-2 items-center mt-1 w-full md:w-auto ${isPoolStage ? "hidden" : ""}">
+            <div class="flex gap-2 items-center mt-1 w-full md:w-auto ${isPoolStage ? 'hidden' : ''}">
               <select id="star-select-${row[0]}" onchange="onStarSelectChange(this, ${row[0]})" class="flex-1 text-[10px] md:text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200 rounded-lg px-2 md:px-3 py-1.5 outline-none cursor-pointer hover:bg-amber-100 transition-colors" ${isDisabled}>
                 <option value="">Sao (10đ)</option>
                 <option value="20" ${usedStarOnThisMatch === 20 ? "selected" : !currentAvailableStars.includes(20) ? "disabled" : ""}>⭐ 20đ ${!currentAvailableStars.includes(20) && usedStarOnThisMatch !== 20 ? "(Hết)" : ""}</option>
@@ -587,16 +567,16 @@ function renderMatches() {
                 <option value="40" ${usedStarOnThisMatch === 40 ? "selected" : !currentAvailableStars.includes(40) ? "disabled" : ""}>⭐ 40đ ${!currentAvailableStars.includes(40) && usedStarOnThisMatch !== 40 ? "(Hết)" : ""}</option>
                 <option value="50" ${usedStarOnThisMatch === 50 ? "selected" : !currentAvailableStars.includes(50) ? "disabled" : ""}>⭐ 50đ ${!currentAvailableStars.includes(50) && usedStarOnThisMatch !== 50 ? "(Hết)" : ""}</option>
               </select>
-              <input type="number" id="rocket-input-${row[0]}" step="10" min="20" max="${currentRemainingRocket + (usedRocketOnThisMatch || 0)}" value="${usedRocketOnThisMatch || ""}" placeholder="${parseInt(row[0]) >= 69 ? "🚀 Tên lửa (≥20đ)" : "🚀 Chỉ Knockout"}" class="flex-1 text-[10px] md:text-xs font-bold bg-purple-50 text-purple-700 border border-purple-200 rounded-lg px-2 md:px-3 py-1.5 outline-none hover:bg-purple-100 transition-colors w-28 disabled:bg-gray-100 disabled:text-gray-400 disabled:border-gray-200 disabled:cursor-not-allowed" ${isDisabled || parseInt(row[0]) < 69 ? "disabled" : ""} oninput="onRocketInputChange(this, ${row[0]})" title="${parseInt(row[0]) < 69 ? "Tên lửa hi vọng chỉ được dùng từ vòng Knockout" : ""}">
+              <input type="number" id="rocket-input-${row[0]}" step="10" min="20" max="${currentRemainingRocket + (usedRocketOnThisMatch || 0)}" value="${usedRocketOnThisMatch || ""}" placeholder="${parseInt(row[0]) >= 69 ? '🚀 Tên lửa (≥20đ)' : '🚀 Chỉ Knockout'}" class="flex-1 text-[10px] md:text-xs font-bold bg-purple-50 text-purple-700 border border-purple-200 rounded-lg px-2 md:px-3 py-1.5 outline-none hover:bg-purple-100 transition-colors w-28 disabled:bg-gray-100 disabled:text-gray-400 disabled:border-gray-200 disabled:cursor-not-allowed" ${isDisabled || parseInt(row[0]) < 69 ? 'disabled' : ''} oninput="onRocketInputChange(this, ${row[0]})" title="${parseInt(row[0]) < 69 ? 'Tên lửa hi vọng chỉ được dùng từ vòng Knockout' : ''}">
             </div>
             <div class="flex gap-2 items-center mt-1 w-full md:w-auto">
-               <input type="text" id="pred-h-${row[0]}" placeholder="${homeTeam.substring(0, 3).toUpperCase()}" value="${row[17] ? row[17].split("-")[0] : ""}" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="w-12 text-center text-xs font-bold border border-gray-200 rounded-lg p-1.5 outline-none focus:border-[#0F5132]" ${isDisabled}>
+               <input type="text" id="pred-h-${row[0]}" placeholder="${homeTeam.substring(0, 3).toUpperCase()}" value="${row[17] ? row[17].split('-')[0] : ''}" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="w-12 text-center text-xs font-bold border border-gray-200 rounded-lg p-1.5 outline-none focus:border-[#0F5132]" ${isDisabled}>
                <span class="text-xs text-gray-500 font-bold">-</span>
-               <input type="text" id="pred-a-${row[0]}" placeholder="${awayTeam.substring(0, 3).toUpperCase()}" value="${row[17] ? row[17].split("-")[1] : ""}" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="w-12 text-center text-xs font-bold border border-gray-200 rounded-lg p-1.5 outline-none focus:border-[#0F5132]" ${isDisabled}>
+               <input type="text" id="pred-a-${row[0]}" placeholder="${awayTeam.substring(0, 3).toUpperCase()}" value="${row[17] ? row[17].split('-')[1] : ''}" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="w-12 text-center text-xs font-bold border border-gray-200 rounded-lg p-1.5 outline-none focus:border-[#0F5132]" ${isDisabled}>
                <button onclick="submitPrediction(this, ${row[0]})" class="bg-gray-800 hover:bg-black text-white text-[10px] md:text-xs font-bold py-1.5 px-3 rounded-lg transition-colors whitespace-nowrap" ${isDisabled}>Gửi Tỉ số</button>
-               ${row[17] ? `<button onclick="cancelPrediction(this, ${row[0]})" class="bg-red-100 hover:bg-red-200 text-red-600 text-[10px] md:text-xs font-bold py-1.5 px-3 rounded-lg transition-colors whitespace-nowrap" ${isDisabled} title="Hủy dự đoán"><i class="ti ti-trash"></i></button>` : ""}
+               ${row[17] ? `<button onclick="cancelPrediction(this, ${row[0]})" class="bg-red-100 hover:bg-red-200 text-red-600 text-[10px] md:text-xs font-bold py-1.5 px-3 rounded-lg transition-colors whitespace-nowrap" ${isDisabled} title="Hủy dự đoán"><i class="ti ti-trash"></i></button>` : ''}
             </div>
-            ${row[17] ? `<div class="text-[10px] font-semibold text-emerald-600 mt-0.5">Dự đoán của bạn: ${row[17]}</div>` : ""}
+            ${row[17] ? `<div class="text-[10px] font-semibold text-emerald-600 mt-0.5">Dự đoán của bạn: ${row[17]}</div>` : ''}
             <div class="text-[10px] text-gray-500 mt-0.5">👥 Có <span class="font-bold text-gray-700">${row[18] || 0}</span> người dự đoán tỉ số.</div>
             ${poolStatsHtml}
           </div>
@@ -674,7 +654,7 @@ function loadLeaderboardData() {
             </td>
             <td class="p-4 text-center font-extrabold text-[#0F5132]">${player.totalScore}</td>
             <td class="p-4 text-center font-bold text-blue-600">${player._scorePredictionPoints || 0}</td>
-            <td class="p-4 text-center font-bold text-purple-600">🚀 ${player.remainingRocket !== undefined ? player.remainingRocket : "--"}</td>
+            <td class="p-4 text-center font-bold text-purple-600">🚀 ${player.remainingRocket !== undefined ? player.remainingRocket : '--'}</td>
             <td class="p-4 text-center font-bold text-green-600">${player.winMatches}</td>
             <td class="p-4 text-center font-bold text-red-500">${player.loseMatches}</td>
             <td class="p-4 text-center font-semibold text-gray-700">${winRateFormatted}</td>
@@ -1053,15 +1033,7 @@ function openMatchDetail(stt) {
     myResultBadge = '<span class="status-badge status-lose">❌ Thua</span>';
   }
 
-  var starSuffix = hasHopeStar
-    ? showStarNumber
-      ? ` ⭐${usedStarOnThisMatch}`
-      : " ⭐"
-    : hasRocket
-      ? showStarNumber
-        ? ` 🚀${usedRocketOnThisMatch}`
-        : " 🚀"
-      : "";
+  var starSuffix = hasHopeStar ? (showStarNumber ? ` ⭐${usedStarOnThisMatch}` : " ⭐") : (hasRocket ? (showStarNumber ? ` 🚀${usedRocketOnThisMatch}` : " 🚀") : "");
   var myChoiceLabel = "Chưa chọn";
   // Nếu có sao/tên lửa và trận chưa có kết quả (actualWinningChoice falsy) và không phải tab 'past',
   // chỉ hiển thị biểu tượng và không hiện tên đội.
@@ -1369,15 +1341,11 @@ function switchChartMode(mode) {
   const btnRanks = document.getElementById("btnChartRanks");
 
   if (mode === "points") {
-    btnPoints.className =
-      "px-4 py-1.5 text-sm font-bold rounded-lg bg-white shadow-sm text-emerald-700 transition-all";
-    btnRanks.className =
-      "px-4 py-1.5 text-sm font-semibold rounded-lg text-gray-500 hover:text-gray-700 transition-all";
+    btnPoints.className = "px-4 py-1.5 text-sm font-bold rounded-lg bg-white shadow-sm text-emerald-700 transition-all";
+    btnRanks.className = "px-4 py-1.5 text-sm font-semibold rounded-lg text-gray-500 hover:text-gray-700 transition-all";
   } else {
-    btnRanks.className =
-      "px-4 py-1.5 text-sm font-bold rounded-lg bg-white shadow-sm text-emerald-700 transition-all";
-    btnPoints.className =
-      "px-4 py-1.5 text-sm font-semibold rounded-lg text-gray-500 hover:text-gray-700 transition-all";
+    btnRanks.className = "px-4 py-1.5 text-sm font-bold rounded-lg bg-white shadow-sm text-emerald-700 transition-all";
+    btnPoints.className = "px-4 py-1.5 text-sm font-semibold rounded-lg text-gray-500 hover:text-gray-700 transition-all";
   }
 
   if (chartRawData) {
@@ -1390,7 +1358,7 @@ function toggleAllSeries(show) {
   const isPointsMode = currentChartMode === "points";
   const series = isPointsMode ? chartRawData.pointsSeries : chartRawData.ranksSeries;
 
-  series.forEach((s) => {
+  series.forEach(s => {
     if (show) {
       chartInstance.showSeries(s.name);
     } else {
@@ -1408,65 +1376,65 @@ function renderChart() {
   const options = {
     series: series,
     chart: {
-      type: "line",
+      type: 'line',
       height: 450,
-      fontFamily: "Lexend, sans-serif",
+      fontFamily: 'Lexend, sans-serif',
       toolbar: {
-        show: true,
+        show: true
       },
       zoom: {
-        enabled: true,
+        enabled: true
       },
       animations: {
         enabled: true,
-        easing: "easeinout",
+        easing: 'easeinout',
         speed: 800,
-      },
+      }
     },
     stroke: {
-      curve: "smooth",
-      width: 3,
+      curve: 'smooth',
+      width: 3
     },
     xaxis: {
       categories: chartRawData.categories,
-      tickPlacement: "on",
+      tickPlacement: 'on',
       labels: {
         style: {
-          fontSize: "10px",
-        },
-      },
+          fontSize: '10px'
+        }
+      }
     },
     yaxis: {
       title: {
-        text: isPointsMode ? "Điểm số" : "Thứ hạng",
+        text: isPointsMode ? 'Điểm số' : 'Thứ hạng',
         style: {
           fontWeight: 600,
-        },
+        }
       },
       reversed: !isPointsMode,
-      min: isPointsMode ? undefined : 1,
+      min: isPointsMode ? undefined : 1
     },
     markers: {
       size: 4,
       hover: {
-        size: 6,
-      },
+        size: 6
+      }
     },
     tooltip: {
       y: {
         formatter: function (val) {
           return isPointsMode ? val + " điểm" : "Hạng " + val;
-        },
-      },
+        }
+      }
     },
     legend: {
-      position: "bottom",
-      horizontalAlign: "center",
+      position: 'bottom',
+      horizontalAlign: 'center',
       itemMargin: {
         horizontal: 10,
-        vertical: 5,
-      },
-    },
+        vertical: 5
+      }
+    }
   };
 
   if (chartInstance) {
