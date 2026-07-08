@@ -413,13 +413,14 @@ function renderMatches() {
     var awayPoolHtml = '';
 
     if (isPoolStage) {
+      var poolValue = roundName.toLowerCase().includes("vòng 8 đội") ? 500 : 300;
       if (currentTab === "past") {
         var upperCount = row[19] || 0;
         var lowerCount = row[20] || 0;
         var totalPlayers = row[21] || 20;
 
-        var upperAvg = Math.round(300 / Math.max(upperCount, 1));
-        var lowerAvg = Math.round(300 / Math.max(lowerCount, 1));
+        var upperAvg = Math.round(poolValue / Math.max(upperCount, 1));
+        var lowerAvg = Math.round(poolValue / Math.max(lowerCount, 1));
 
         var homePayout = homeTeam === upperTeam ? `Biến động: ±${upperAvg}đ` : `Biến động: ±${lowerAvg}đ`;
         var awayPayout = awayTeam === upperTeam ? `Biến động: ±${upperAvg}đ` : `Biến động: ±${lowerAvg}đ`;
@@ -429,7 +430,7 @@ function renderMatches() {
 
         poolStatsHtml = `<div class="text-[10px] text-gray-500 mt-0.5">💰 Pool: Trên <span class="font-bold text-gray-700">${upperCount}</span> - Dưới <span class="font-bold text-gray-700">${lowerCount}</span> / <span class="font-bold text-gray-700">${totalPlayers}</span></div>`;
       } else {
-        poolStatsHtml = `<div class="text-[10px] font-bold text-indigo-600 mt-1 bg-indigo-50 px-2 py-1 rounded border border-indigo-100 inline-block">💰 Chế độ Pool: 300đ</div>`;
+        poolStatsHtml = `<div class="text-[10px] font-bold text-indigo-600 mt-1 bg-indigo-50 px-2 py-1 rounded border border-indigo-100 inline-block">💰 Chế độ Pool: ${poolValue}đ</div>`;
       }
     }
 
