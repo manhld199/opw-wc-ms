@@ -524,6 +524,7 @@ function getLeaderboard() {
         rocketImpact: 0,
         remainingRocket: 200,
         predictionPoints: 0,
+        votingPoints: 0,
       };
     }
   }
@@ -541,6 +542,8 @@ function getLeaderboard() {
 
     var homeTeam = String(infoRange[j][4] || "").trim();
     var awayTeam = String(infoRange[j][5] || "").trim();
+    var roundName = String(infoRange[j][2] || "").trim();
+    var isOldStage = roundName.toLowerCase().includes("vòng bảng") || roundName.toLowerCase().includes("vòng 32");
     var upperTeam = String(infoRange[j][12] || "").trim();
     var matchStatus = String(infoRange[j][8] || "").trim();
 
@@ -600,6 +603,10 @@ function getLeaderboard() {
           if (isLose) {
             if (betVal.includes("⭐")) userStats[pName].usedStar = true;
             if (betVal.includes("🚀")) userStats[pName].usedRocket = true;
+          }
+          if (isOldStage) {
+            if (isWin) userStats[pName].votingPoints += 10;
+            else if (isLose) userStats[pName].votingPoints -= 10;
           }
           if (isWin || isLose) {
             var starMatch = betVal.match(/⭐(\d+)/);
@@ -696,8 +703,8 @@ function getLeaderboard() {
       _hopeStarImpact: hopeStarImpact,
       _starImpact: userStats[playerName] ? userStats[playerName].starImpact : 0,
       _rocketImpact: userStats[playerName] ? userStats[playerName].rocketImpact : 0,
-      _votingPoints: 0,
-      _oddsPredictionPoints: Number(dataRange[i][2] || 0) - (userStats[playerName] ? userStats[playerName].starImpact : 0) - (userStats[playerName] ? userStats[playerName].rocketImpact : 0),
+      _votingPoints: userStats[playerName] ? userStats[playerName].votingPoints : 0,
+      _poolPoints: Number(dataRange[i][2] || 0) - (userStats[playerName] ? userStats[playerName].votingPoints : 0) - (userStats[playerName] ? userStats[playerName].starImpact : 0) - (userStats[playerName] ? userStats[playerName].rocketImpact : 0),
       _scorePredictionPoints: userStats[playerName] ? userStats[playerName].predictionPoints : 0,
       remainingRocket: userStats[playerName] ? userStats[playerName].remainingRocket : 200,
     });

@@ -655,10 +655,10 @@ function loadLeaderboardData() {
             </td>
             <td class="p-4 text-center font-extrabold text-[#0F5132]">${player.totalScore}</td>
             <td class="p-4 text-center font-bold text-orange-500">${player._votingPoints || 0}</td>
-            <td class="p-4 text-center font-bold text-blue-600">${player._scorePredictionPoints || 0}</td>
+            <td class="p-4 text-center font-bold text-blue-600">${player._poolPoints || 0}</td>
             <td class="p-4 text-center font-bold text-yellow-500">${player._starImpact || 0}</td>
             <td class="p-4 text-center font-bold text-purple-600">${player._rocketImpact || 0}</td>
-            <td class="p-4 text-center font-bold text-teal-600">${player._oddsPredictionPoints || 0}</td>
+            <td class="p-4 text-center font-bold text-teal-600">${player._scorePredictionPoints || 0}</td>
             <td class="p-4 text-center font-bold text-green-600">${player.winMatches}</td>
             <td class="p-4 text-center font-bold text-red-500">${player.loseMatches}</td>
             <td class="p-4 text-center font-semibold text-gray-700">${winRateFormatted}</td>
