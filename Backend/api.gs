@@ -696,6 +696,8 @@ function getLeaderboard() {
       _hopeStarImpact: hopeStarImpact,
       _starImpact: userStats[playerName] ? userStats[playerName].starImpact : 0,
       _rocketImpact: userStats[playerName] ? userStats[playerName].rocketImpact : 0,
+      _votingPoints: 0,
+      _oddsPredictionPoints: Number(dataRange[i][2] || 0) - (userStats[playerName] ? userStats[playerName].starImpact : 0) - (userStats[playerName] ? userStats[playerName].rocketImpact : 0),
       _scorePredictionPoints: userStats[playerName] ? userStats[playerName].predictionPoints : 0,
       remainingRocket: userStats[playerName] ? userStats[playerName].remainingRocket : 200,
     });
