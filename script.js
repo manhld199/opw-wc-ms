@@ -427,7 +427,7 @@ function renderMatches() {
     if (isPoolStage) {
       var poolValue =
         roundName.toLowerCase().includes("vòng 8 đội") || roundName.toLowerCase().includes("tứ kết")
-          ? 500
+          ? 700
           : 300;
       if (currentTab === "past") {
         var upperCount = row[19] || 0;
