@@ -426,10 +426,10 @@ function renderMatches() {
 
     if (isPoolStage) {
       var poolValue =
-        roundName.toLowerCase().includes("bán kết")
-          ? 700
-          : roundName.toLowerCase().includes("vòng 8 đội") || roundName.toLowerCase().includes("tứ kết")
+        roundName.toLowerCase().includes("vòng 8") || roundName.toLowerCase().includes("tứ kết")
           ? 500
+          : roundName.toLowerCase().includes("bán kết")
+          ? 700
           : 300;
       if (currentTab === "past") {
         var upperCount = row[19] || 0;
