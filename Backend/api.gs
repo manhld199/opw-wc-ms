@@ -22,7 +22,7 @@ function doPost(e) {
     } else if (action === "getMatchDetail") {
       output = getMatchDetail(params.stt);
     } else if (action === "submitBet") {
-      output = submitBet(email, params.stt, params.choice);
+      output = submitBet(email, params.stt, params.choice, params.prediction, params.taixiu);
     } else if (action === "submitScorePrediction") {
       output = submitScorePrediction(email, params.stt, params.prediction);
     } else if (action === "getChartData") {
@@ -124,6 +124,10 @@ function getMatches(email) {
 
   var userBets = sheetBet.getRange(3, userColNum, 100, 1).getValues();
   var userPredictions = sheetPrediction ? sheetPrediction.getRange(3, userColNum, 100, 1).getDisplayValues() : [];
+  
+  var sheetTaixiu = ss.getSheetByName("Tài xỉu");
+  var userTaixius = sheetTaixiu ? sheetTaixiu.getRange(3, userColNum, 100, 1).getValues() : [];
+  var taixiuRange = sheetTaixiu ? sheetTaixiu.getRange(3, 1, 100, 50).getValues() : [];
 
   var results = [];
 
@@ -164,6 +168,25 @@ function getMatches(email) {
       row.push(lowerCount); // row[20]
       row.push(validCols.length); // row[21]
       
+      var taixiuRate = "";
+      var userTx = "";
+      var taiCount = 0;
+      var xiuCount = 0;
+
+      if (taixiuRange.length > j) {
+        taixiuRate = taixiuRange[j][5] || ""; // col F (index 5)
+        userTx = userTaixius.length > j ? String(userTaixius[j][0] || "").trim() : "";
+        for (var k = 0; k < validCols.length; k++) {
+          var txStr = String(taixiuRange[j][validCols[k]] || "").trim();
+          if (txStr === "Tài") taiCount++;
+          else if (txStr === "Xỉu") xiuCount++;
+        }
+      }
+      row.push(taixiuRate); // row[22]
+      row.push(userTx); // row[23]
+      row.push(taiCount); // row[24]
+      row.push(xiuCount); // row[25]
+      
       results.push(row);
     }
   }
@@ -171,12 +194,14 @@ function getMatches(email) {
   return results;
 }
 
-function submitBet(email, stt, choice) {
+function submitBet(email, stt, choice, prediction, taixiu) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
 
   var sheetInfo = ss.getSheetByName("Trận đấu");
   var sheetBet = ss.getSheetByName("Đặt cược");
   var sheetData = ss.getSheetByName("Data");
+  var sheetPrediction = ss.getSheetByName("Dự đoán");
+  var sheetTaixiu = ss.getSheetByName("Tài xỉu");
 
   var userData = sheetData.getRange("A2:C50").getValues();
 
@@ -318,6 +343,15 @@ function submitBet(email, stt, choice) {
 
   sheetBet.getRange(row, userColNum).setValue(choice);
 
+  if (parseInt(stt) >= 97) {
+    if (prediction !== undefined && prediction !== "") {
+      if (sheetPrediction) sheetPrediction.getRange(row, userColNum).setValue("'" + prediction);
+    }
+    if (taixiu !== undefined && taixiu !== "") {
+      if (sheetTaixiu) sheetTaixiu.getRange(row, userColNum).setValue(taixiu);
+    }
+  }
+
   return "✅ Đã xác nhận: " + choice;
 }
 
@@ -432,6 +466,10 @@ function getPastMatches(email) {
 
   var userBets = sheetBet.getRange(3, userColNum, 100, 1).getValues();
   var userPredictions = sheetPrediction ? sheetPrediction.getRange(3, userColNum, 100, 1).getDisplayValues() : [];
+  
+  var sheetTaixiu = ss.getSheetByName("Tài xỉu");
+  var userTaixius = sheetTaixiu ? sheetTaixiu.getRange(3, userColNum, 100, 1).getValues() : [];
+  var taixiuRange = sheetTaixiu ? sheetTaixiu.getRange(3, 1, 100, 50).getValues() : [];
 
   var results = [];
 
@@ -473,6 +511,25 @@ function getPastMatches(email) {
       row.push(lowerCount); // row[20]
       row.push(validCols.length); // row[21]
       
+      var taixiuRate = "";
+      var userTx = "";
+      var taiCount = 0;
+      var xiuCount = 0;
+
+      if (taixiuRange.length > j) {
+        taixiuRate = taixiuRange[j][5] || "";
+        userTx = userTaixius.length > j ? String(userTaixius[j][0] || "").trim() : "";
+        for (var k = 0; k < validCols.length; k++) {
+          var txStr = String(taixiuRange[j][validCols[k]] || "").trim();
+          if (txStr === "Tài") taiCount++;
+          else if (txStr === "Xỉu") xiuCount++;
+        }
+      }
+      row.push(taixiuRate); // row[22]
+      row.push(userTx); // row[23]
+      row.push(taiCount); // row[24]
+      row.push(xiuCount); // row[25]
+      
       results.push(row);
     }
   }
@@ -508,6 +565,8 @@ function getLeaderboard() {
   var betRange = sheetBet ? sheetBet.getRange(3, 1, 100, 50).getValues() : [];
   var sheetPrediction = ss.getSheetByName("Dự đoán");
   var predictionRange = sheetPrediction ? sheetPrediction.getRange(3, 1, 100, 50).getDisplayValues() : [];
+  var sheetTaixiu = ss.getSheetByName("Tài xỉu");
+  var taixiuRange = sheetTaixiu ? sheetTaixiu.getRange(3, 1, 100, 50).getValues() : [];
   var userData = sheetData ? sheetData.getRange("A2:C50").getValues() : [];
 
   // Xây dựng object user để lưu các chỉ số tính danh hiệu
@@ -524,6 +583,7 @@ function getLeaderboard() {
         rocketImpact: 0,
         remainingRocket: 200,
         predictionPoints: 0,
+        taixiuPoints: 0,
         votingPoints: 0,
       };
     }
@@ -570,6 +630,20 @@ function getLeaderboard() {
     var hasValidActualScore = !isNaN(actualHomeScore) && !isNaN(actualAwayScore) && matchStatus.includes("Kết thúc");
     var actualScoreStr = hasValidActualScore ? (actualHomeScore + "-" + actualAwayScore) : "";
 
+    var matchTaixius = {};
+    var taiCountForMatch = 0;
+    var xiuCountForMatch = 0;
+    var actualTaixiu = "";
+    if (hasValidActualScore && taixiuRange.length > j) {
+      var rateStr = String(taixiuRange[j][5] || "").replace(",", ".");
+      var taixiuRate = parseFloat(rateStr);
+      if (!isNaN(taixiuRate)) {
+        var totalGoals = actualHomeScore + actualAwayScore;
+        if (totalGoals > taixiuRate) actualTaixiu = "Tài";
+        else if (totalGoals < taixiuRate) actualTaixiu = "Xỉu";
+      }
+    }
+
     for (var pName in userStats) {
       var cIdx = userStats[pName].colIndex;
       if (cIdx >= 0) {
@@ -582,6 +656,16 @@ function getLeaderboard() {
             if (hasValidActualScore && predVal === actualScoreStr) {
               correctPredictions.push(pName);
             }
+          }
+        }
+
+        // Xử lý Tài Xỉu
+        if (taixiuRange.length > j && taixiuRange[j][cIdx]) {
+          var txVal = String(taixiuRange[j][cIdx]).trim();
+          if (txVal === "Tài" || txVal === "Xỉu") {
+            matchTaixius[pName] = txVal;
+            if (txVal === "Tài") taiCountForMatch++;
+            else if (txVal === "Xỉu") xiuCountForMatch++;
           }
         }
 
@@ -634,13 +718,35 @@ function getLeaderboard() {
 
     // Tính điểm Dự đoán Tỉ số
     if (hasValidActualScore && numPredictions > 0) {
-      var pool = numPredictions * 10;
+      var sttNum = parseInt(stt);
+      var ptsPerPerson = (sttNum >= 97) ? 20 : 10;
+      var pool = numPredictions * ptsPerPerson;
       for (var p in matchPredictions) {
         if (correctPredictions.length > 0) {
           if (correctPredictions.includes(p)) {
-            userStats[p].predictionPoints += Math.floor(pool / correctPredictions.length) - 10;
+            userStats[p].predictionPoints += Math.floor(pool / correctPredictions.length) - ptsPerPerson;
           } else {
-            userStats[p].predictionPoints -= 10;
+            userStats[p].predictionPoints -= ptsPerPerson;
+          }
+        }
+      }
+    }
+
+    // Tính điểm Tài Xỉu
+    if (hasValidActualScore && actualTaixiu !== "") {
+      var sttNum = parseInt(stt);
+      if (sttNum >= 97) {
+        var winCount = actualTaixiu === "Tài" ? taiCountForMatch : xiuCountForMatch;
+        var loseCount = actualTaixiu === "Tài" ? xiuCountForMatch : taiCountForMatch;
+
+        var winPts = winCount > 0 ? Math.round(300 / winCount) : 0;
+        var losePts = loseCount > 0 ? Math.round(300 / loseCount) : 0;
+
+        for (var p in matchTaixius) {
+          if (matchTaixius[p] === actualTaixiu) {
+             userStats[p].taixiuPoints += winPts;
+          } else if (matchTaixius[p] !== "") {
+             userStats[p].taixiuPoints -= losePts;
           }
         }
       }
@@ -673,6 +779,7 @@ function getLeaderboard() {
 
     if (userStats[playerName]) {
       totalScore += userStats[playerName].predictionPoints;
+      totalScore += userStats[playerName].taixiuPoints;
     }
 
     var winRate = total > 0 ? wins / total : 0;
@@ -706,6 +813,7 @@ function getLeaderboard() {
       _votingPoints: userStats[playerName] ? userStats[playerName].votingPoints : 0,
       _poolPoints: Number(dataRange[i][2] || 0) - (userStats[playerName] ? userStats[playerName].votingPoints : 0) - (userStats[playerName] ? userStats[playerName].starImpact : 0) - (userStats[playerName] ? userStats[playerName].rocketImpact : 0),
       _scorePredictionPoints: userStats[playerName] ? userStats[playerName].predictionPoints : 0,
+      _taixiuPoints: userStats[playerName] ? userStats[playerName].taixiuPoints : 0,
       remainingRocket: userStats[playerName] ? userStats[playerName].remainingRocket : 200,
     });
   }

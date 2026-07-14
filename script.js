@@ -520,8 +520,10 @@ function renderMatches() {
                 ▼ ${lowerTeam} ${betValue === "Cửa dưới" && hasHopeStar ? `⭐${usedStarOnThisMatch}` : betValue === "Cửa dưới" && hasRocket ? `🚀${usedRocketOnThisMatch}` : ""}
               </button>
             </div>
+            </div>
             ${row[17] ? `<div class="text-[10px] font-semibold text-emerald-600 mt-1">Đã đoán tỉ số: ${row[17]}</div>` : ""}
-            <div class="text-[10px] text-gray-500 mt-0.5">👥 Có <span class="font-bold text-gray-700">${row[18] || 0}</span> người dự đoán tỉ số.</div>
+            ${row[23] ? `<div class="text-[10px] font-semibold text-indigo-600 mt-1">Tài Xỉu (${row[22]}): ${row[23]}</div>` : ""}
+            <div class="text-[10px] text-gray-500 mt-0.5">👥 Tỉ số: <span class="font-bold text-gray-700">${row[18] || 0}</span> người | Tài: <span class="font-bold text-gray-700">${row[24] || 0}</span> - Xỉu: <span class="font-bold text-gray-700">${row[25] || 0}</span></div>
             ${poolStatsHtml}
           </div>
         </div>
@@ -589,15 +591,23 @@ function renderMatches() {
               </select>
               <input type="number" id="rocket-input-${row[0]}" step="10" min="20" max="${currentRemainingRocket + (usedRocketOnThisMatch || 0)}" value="${usedRocketOnThisMatch || ""}" placeholder="${parseInt(row[0]) >= 69 ? "🚀 Tên lửa (≥20đ)" : "🚀 Chỉ Knockout"}" class="flex-1 text-[10px] md:text-xs font-bold bg-purple-50 text-purple-700 border border-purple-200 rounded-lg px-2 md:px-3 py-1.5 outline-none hover:bg-purple-100 transition-colors w-28 disabled:bg-gray-100 disabled:text-gray-400 disabled:border-gray-200 disabled:cursor-not-allowed" ${isDisabled || parseInt(row[0]) < 69 ? "disabled" : ""} oninput="onRocketInputChange(this, ${row[0]})" title="${parseInt(row[0]) < 69 ? "Tên lửa hi vọng chỉ được dùng từ vòng Knockout" : ""}">
             </div>
+            ${parseInt(row[0]) >= 97 ? `
+            <div class="flex gap-2 items-center mt-1 w-full md:w-auto">
+               <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">Tài Xỉu (${row[22] || '?'}):</span>
+               <button id="tx-tai-${row[0]}" onclick="selectTx(${row[0]}, 'Tài')" class="flex-1 py-1.5 md:py-2 rounded-lg border border-gray-200 text-[10px] md:text-xs font-bold transition-all tx-btn ${row[23] === 'Tài' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'bg-white text-gray-500 hover:border-indigo-200'}" ${isDisabled}>Tài</button>
+               <button id="tx-xiu-${row[0]}" onclick="selectTx(${row[0]}, 'Xỉu')" class="flex-1 py-1.5 md:py-2 rounded-lg border border-gray-200 text-[10px] md:text-xs font-bold transition-all tx-btn ${row[23] === 'Xỉu' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'bg-white text-gray-500 hover:border-indigo-200'}" ${isDisabled}>Xỉu</button>
+               <input type="hidden" id="tx-val-${row[0]}" value="${row[23] || ''}">
+            </div>
+            ` : ""}
             <div class="flex gap-2 items-center mt-1 w-full md:w-auto">
                <input type="text" id="pred-h-${row[0]}" placeholder="${homeTeam.substring(0, 3).toUpperCase()}" value="${row[17] ? row[17].split("-")[0] : ""}" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="w-12 text-center text-xs font-bold border border-gray-200 rounded-lg p-1.5 outline-none focus:border-[#0F5132]" ${isDisabled}>
                <span class="text-xs text-gray-500 font-bold">-</span>
                <input type="text" id="pred-a-${row[0]}" placeholder="${awayTeam.substring(0, 3).toUpperCase()}" value="${row[17] ? row[17].split("-")[1] : ""}" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="w-12 text-center text-xs font-bold border border-gray-200 rounded-lg p-1.5 outline-none focus:border-[#0F5132]" ${isDisabled}>
-               <button onclick="submitPrediction(this, ${row[0]})" class="bg-gray-800 hover:bg-black text-white text-[10px] md:text-xs font-bold py-1.5 px-3 rounded-lg transition-colors whitespace-nowrap" ${isDisabled}>Gửi Tỉ số</button>
-               ${row[17] ? `<button onclick="cancelPrediction(this, ${row[0]})" class="bg-red-100 hover:bg-red-200 text-red-600 text-[10px] md:text-xs font-bold py-1.5 px-3 rounded-lg transition-colors whitespace-nowrap" ${isDisabled} title="Hủy dự đoán"><i class="ti ti-trash"></i></button>` : ""}
+               ${parseInt(row[0]) >= 97 ? "" : `<button onclick="submitPrediction(this, ${row[0]})" class="bg-gray-800 hover:bg-black text-white text-[10px] md:text-xs font-bold py-1.5 px-3 rounded-lg transition-colors whitespace-nowrap" ${isDisabled}>Gửi Tỉ số</button>`}
+               ${row[17] && parseInt(row[0]) < 97 ? `<button onclick="cancelPrediction(this, ${row[0]})" class="bg-red-100 hover:bg-red-200 text-red-600 text-[10px] md:text-xs font-bold py-1.5 px-3 rounded-lg transition-colors whitespace-nowrap" ${isDisabled} title="Hủy dự đoán"><i class="ti ti-trash"></i></button>` : ""}
             </div>
             ${row[17] ? `<div class="text-[10px] font-semibold text-emerald-600 mt-0.5">Dự đoán của bạn: ${row[17]}</div>` : ""}
-            <div class="text-[10px] text-gray-500 mt-0.5">👥 Có <span class="font-bold text-gray-700">${row[18] || 0}</span> người dự đoán tỉ số.</div>
+            <div class="text-[10px] text-gray-500 mt-0.5">👥 Tỉ số: <span class="font-bold text-gray-700">${row[18] || 0}</span> người | Tài: <span class="font-bold text-gray-700">${row[24] || 0}</span> - Xỉu: <span class="font-bold text-gray-700">${row[25] || 0}</span></div>
             ${poolStatsHtml}
           </div>
         </div>
@@ -678,6 +688,7 @@ function loadLeaderboardData() {
             <td class="p-4 text-center font-bold text-yellow-500">${player._starImpact || 0}</td>
             <td class="p-4 text-center font-bold text-purple-600">${player._rocketImpact || 0}</td>
             <td class="p-4 text-center font-bold text-teal-600">${player._scorePredictionPoints || 0}</td>
+            <td class="p-4 text-center font-bold text-indigo-500">${player._taixiuPoints || 0}</td>
             <td class="p-4 text-center font-bold text-green-600">${player.winMatches}</td>
             <td class="p-4 text-center font-bold text-red-500">${player.loseMatches}</td>
             <td class="p-4 text-center font-semibold text-gray-700">${winRateFormatted}</td>
@@ -712,6 +723,31 @@ function bet(btn, stt, choice) {
   var sVal = starSelect && starSelect.value ? parseInt(starSelect.value) : 0;
   var rVal = rocketInput && rocketInput.value ? parseInt(rocketInput.value) : 0;
 
+  var isSemiFinalOrLater = parseInt(stt) >= 97;
+  var predictionStr = "";
+  var taixiuStr = "";
+
+  if (isSemiFinalOrLater) {
+    var hInput = document.getElementById("pred-h-" + stt);
+    var aInput = document.getElementById("pred-a-" + stt);
+    var txInput = document.getElementById("tx-val-" + stt);
+    if (!hInput || !aInput || !txInput) return;
+    
+    var hScore = hInput.value.trim();
+    var aScore = aInput.value.trim();
+    if (hScore === "" || aScore === "") {
+      showToast("❌ Trận Bán kết: Vui lòng nhập Dự đoán Tỉ số trước khi chọn Cửa!");
+      return;
+    }
+    predictionStr = hScore + "-" + aScore;
+
+    taixiuStr = txInput.value;
+    if (!taixiuStr) {
+      showToast("❌ Trận Bán kết: Vui lòng chọn mốc Tài Xỉu trước khi chọn Cửa!");
+      return;
+    }
+  }
+
   if (rVal > 0 && rVal % 10 !== 0) {
     showToast("❌ Lỗi: Điểm cược Tên lửa phải là bội số của 10 (20, 30, 40...)!");
     return;
@@ -734,6 +770,8 @@ function bet(btn, stt, choice) {
   apiCall("submitBet", {
     stt: stt,
     choice: choice,
+    prediction: predictionStr,
+    taixiu: taixiuStr,
   })
     .then((res) => {
       showToast(typeof res === "string" ? res : JSON.stringify(res));
@@ -858,8 +896,31 @@ function closeWarningModal() {
 function logout() {
   localStorage.removeItem("currentUserEmail");
   localStorage.removeItem("currentUserName");
-  window.location.reload();
+  currentUserEmail = "";
+  location.reload();
 }
+
+window.selectTx = function(stt, val) {
+  if (currentTab === "past" || currentTab === "leaderboard") return;
+  
+  var valInput = document.getElementById("tx-val-" + stt);
+  if (valInput) valInput.value = val;
+  
+  var taiBtn = document.getElementById("tx-tai-" + stt);
+  var xiuBtn = document.getElementById("tx-xiu-" + stt);
+  
+  var inactiveClass = "flex-1 py-1.5 md:py-2 rounded-lg border border-gray-200 text-[10px] md:text-xs font-bold transition-all tx-btn bg-white text-gray-500 hover:border-indigo-200";
+  var activeClass = "flex-1 py-1.5 md:py-2 rounded-lg border-indigo-200 text-[10px] md:text-xs font-bold transition-all tx-btn bg-indigo-50 text-indigo-700";
+  
+  if (taiBtn) taiBtn.className = inactiveClass;
+  if (xiuBtn) xiuBtn.className = inactiveClass;
+  
+  if (val === 'Tài' && taiBtn) {
+    taiBtn.className = activeClass;
+  } else if (val === 'Xỉu' && xiuBtn) {
+    xiuBtn.className = activeClass;
+  }
+};
 
 function clearAllCountdowns() {
   Object.keys(countdownIntervals).forEach(function (stt) {
