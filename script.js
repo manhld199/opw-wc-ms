@@ -429,7 +429,7 @@ function renderMatches() {
         roundName.toLowerCase().includes("vòng 8") || roundName.toLowerCase().includes("tứ kết")
           ? 500
           : roundName.toLowerCase().includes("bán kết")
-          ? 500
+          ? 700
           : 300;
       if (currentTab === "past") {
         var upperCount = row[19] || 0;
@@ -594,8 +594,9 @@ function renderMatches() {
             ${parseInt(row[0]) >= 97 ? `
             <div class="flex gap-2 items-center mt-1 w-full md:w-auto">
                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">Tài Xỉu (${row[22] || '?'}):</span>
-               <button id="tx-tai-${row[0]}" onclick="selectTx(${row[0]}, 'Tài')" class="flex-1 py-1.5 md:py-2 rounded-lg border border-gray-200 text-[10px] md:text-xs font-bold transition-all tx-btn ${row[23] === 'Tài' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'bg-white text-gray-500 hover:border-indigo-200'}" ${isDisabled}>Tài</button>
-               <button id="tx-xiu-${row[0]}" onclick="selectTx(${row[0]}, 'Xỉu')" class="flex-1 py-1.5 md:py-2 rounded-lg border border-gray-200 text-[10px] md:text-xs font-bold transition-all tx-btn ${row[23] === 'Xỉu' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'bg-white text-gray-500 hover:border-indigo-200'}" ${isDisabled}>Xỉu</button>
+               <button id="tx-tai-${row[0]}" onclick="selectTx(${row[0]}, 'Tài')" class="w-12 text-center py-1.5 rounded-lg border border-gray-200 text-xs font-bold transition-all tx-btn ${row[23] === 'Tài' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'bg-white text-gray-500 hover:border-indigo-200'}" ${isDisabled}>Tài</button>
+               <span class="text-xs text-gray-500 font-bold">-</span>
+               <button id="tx-xiu-${row[0]}" onclick="selectTx(${row[0]}, 'Xỉu')" class="w-12 text-center py-1.5 rounded-lg border border-gray-200 text-xs font-bold transition-all tx-btn ${row[23] === 'Xỉu' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'bg-white text-gray-500 hover:border-indigo-200'}" ${isDisabled}>Xỉu</button>
                <input type="hidden" id="tx-val-${row[0]}" value="${row[23] || ''}">
                <button onclick="submitTaiXiu(this, ${row[0]})" class="bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] md:text-xs font-bold py-1.5 px-3 rounded-lg transition-colors whitespace-nowrap" ${isDisabled}>Gửi TX</button>
             </div>
