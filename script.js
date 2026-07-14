@@ -523,7 +523,7 @@ function renderMatches() {
             </div>
             ${row[17] ? `<div class="text-[10px] font-semibold text-emerald-600 mt-1">Đã đoán tỉ số: ${row[17]}</div>` : ""}
             ${row[23] ? `<div class="text-[10px] font-semibold text-indigo-600 mt-1">Tài Xỉu (${row[22]}): ${row[23]}</div>` : ""}
-            <div class="text-[10px] text-gray-500 mt-0.5">👥 Tỉ số: <span class="font-bold text-gray-700">${row[18] || 0}</span> người | Tài: <span class="font-bold text-gray-700">${row[24] || 0}</span> - Xỉu: <span class="font-bold text-gray-700">${row[25] || 0}</span></div>
+            <div class="text-[10px] text-gray-500 mt-0.5">👥 Tỉ số: <span class="font-bold text-gray-700">${row[18] || 0}</span> người</div>
             ${poolStatsHtml}
           </div>
         </div>
@@ -608,7 +608,7 @@ function renderMatches() {
                ${row[17] ? `<button onclick="cancelPrediction(this, ${row[0]})" class="bg-red-100 hover:bg-red-200 text-red-600 text-[10px] md:text-xs font-bold py-1.5 px-3 rounded-lg transition-colors whitespace-nowrap" ${isDisabled} title="Hủy dự đoán"><i class="ti ti-trash"></i></button>` : ""}
             </div>
             ${row[17] ? `<div class="text-[10px] font-semibold text-emerald-600 mt-0.5">Dự đoán của bạn: ${row[17]}</div>` : ""}
-            <div class="text-[10px] text-gray-500 mt-0.5">👥 Tỉ số: <span class="font-bold text-gray-700">${row[18] || 0}</span> người | Tài: <span class="font-bold text-gray-700">${row[24] || 0}</span> - Xỉu: <span class="font-bold text-gray-700">${row[25] || 0}</span></div>
+            <div class="text-[10px] text-gray-500 mt-0.5">👥 Tỉ số: <span class="font-bold text-gray-700">${row[18] || 0}</span> người</div>
             ${poolStatsHtml}
           </div>
         </div>
