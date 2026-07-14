@@ -25,6 +25,8 @@ function doPost(e) {
       output = submitBet(email, params.stt, params.choice, params.prediction, params.taixiu);
     } else if (action === "submitScorePrediction") {
       output = submitScorePrediction(email, params.stt, params.prediction);
+    } else if (action === "submitTaiXiu") {
+      output = submitTaiXiu(email, params.stt, params.taixiu);
     } else if (action === "getChartData") {
       output = getChartData();
     } else {
@@ -433,6 +435,86 @@ function submitScorePrediction(email, stt, prediction) {
     // Thêm dấu nháy đơn để Google Sheets không tự động parse thành Ngày tháng (Date)
     sheetPrediction.getRange(row, userColNum).setValue("'" + prediction);
     return "✅ Đã lưu dự đoán tỉ số: " + prediction;
+  }
+}
+
+function submitTaiXiu(email, stt, taixiu) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  var sheetInfo = ss.getSheetByName("Trận đấu");
+  var sheetTaixiu = ss.getSheetByName("Tài xỉu");
+  var sheetData = ss.getSheetByName("Data");
+
+  if (!sheetTaixiu) {
+    return "Lỗi: Không tìm thấy sheet Tài xỉu!";
+  }
+
+  var userData = sheetData.getRange("A2:C50").getValues();
+
+  var userName = "Người chơi";
+  var userColChar = "";
+
+  for (var i = 0; i < userData.length; i++) {
+    if (userData[i][0] == email) {
+      userName = userData[i][1];
+      userColChar = userData[i][2];
+      break;
+    }
+  }
+
+  if (userColChar === "") {
+    return "Lỗi: Tài khoản chưa cấu hình cột!";
+  }
+
+  var userColNum = columnLetterToNumber(userColChar);
+
+  var dataInfo = sheetInfo.getRange("A3:P100").getValues();
+
+  var row = -1;
+  var matchData = null;
+
+  for (var j = 0; j < dataInfo.length; j++) {
+    if (dataInfo[j][0] == stt) {
+      row = j + 3;
+      matchData = dataInfo[j];
+      break;
+    }
+  }
+
+  if (row == -1) {
+    return "Lỗi: Không tìm thấy trận đấu!";
+  }
+
+  var timeRaw = matchData[3];
+  var matchTime;
+  if (timeRaw instanceof Date) {
+    matchTime = timeRaw;
+  } else {
+    var timeStr = String(timeRaw).trim();
+    var m = timeStr.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{2})/);
+    if (m) {
+      matchTime = new Date(
+        parseInt(m[3], 10),
+        parseInt(m[2], 10) - 1,
+        parseInt(m[1], 10),
+        parseInt(m[4], 10),
+        parseInt(m[5], 10)
+      );
+    } else {
+      matchTime = new Date(timeStr);
+    }
+  }
+
+  if (new Date() > new Date(matchTime.getTime() - 1 * 60 * 1000)) {
+    return "❌ Đã quá thời gian dự đoán!";
+  }
+
+  if (taixiu === "") {
+    sheetTaixiu.getRange(row, userColNum).clearContent();
+    return "✅ Đã hủy Tài Xỉu!";
+  } else {
+    sheetTaixiu.getRange(row, userColNum).setValue(taixiu);
+    return "✅ Đã lưu Tài Xỉu: " + taixiu;
   }
 }
 

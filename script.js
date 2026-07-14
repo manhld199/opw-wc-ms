@@ -597,14 +597,15 @@ function renderMatches() {
                <button id="tx-tai-${row[0]}" onclick="selectTx(${row[0]}, 'Tài')" class="flex-1 py-1.5 md:py-2 rounded-lg border border-gray-200 text-[10px] md:text-xs font-bold transition-all tx-btn ${row[23] === 'Tài' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'bg-white text-gray-500 hover:border-indigo-200'}" ${isDisabled}>Tài</button>
                <button id="tx-xiu-${row[0]}" onclick="selectTx(${row[0]}, 'Xỉu')" class="flex-1 py-1.5 md:py-2 rounded-lg border border-gray-200 text-[10px] md:text-xs font-bold transition-all tx-btn ${row[23] === 'Xỉu' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'bg-white text-gray-500 hover:border-indigo-200'}" ${isDisabled}>Xỉu</button>
                <input type="hidden" id="tx-val-${row[0]}" value="${row[23] || ''}">
+               <button onclick="submitTaiXiu(this, ${row[0]})" class="bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] md:text-xs font-bold py-1.5 px-3 rounded-lg transition-colors whitespace-nowrap" ${isDisabled}>Gửi TX</button>
             </div>
             ` : ""}
             <div class="flex gap-2 items-center mt-1 w-full md:w-auto">
                <input type="text" id="pred-h-${row[0]}" placeholder="${homeTeam.substring(0, 3).toUpperCase()}" value="${row[17] ? row[17].split("-")[0] : ""}" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="w-12 text-center text-xs font-bold border border-gray-200 rounded-lg p-1.5 outline-none focus:border-[#0F5132]" ${isDisabled}>
                <span class="text-xs text-gray-500 font-bold">-</span>
                <input type="text" id="pred-a-${row[0]}" placeholder="${awayTeam.substring(0, 3).toUpperCase()}" value="${row[17] ? row[17].split("-")[1] : ""}" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="w-12 text-center text-xs font-bold border border-gray-200 rounded-lg p-1.5 outline-none focus:border-[#0F5132]" ${isDisabled}>
-               ${parseInt(row[0]) >= 97 ? "" : `<button onclick="submitPrediction(this, ${row[0]})" class="bg-gray-800 hover:bg-black text-white text-[10px] md:text-xs font-bold py-1.5 px-3 rounded-lg transition-colors whitespace-nowrap" ${isDisabled}>Gửi Tỉ số</button>`}
-               ${row[17] && parseInt(row[0]) < 97 ? `<button onclick="cancelPrediction(this, ${row[0]})" class="bg-red-100 hover:bg-red-200 text-red-600 text-[10px] md:text-xs font-bold py-1.5 px-3 rounded-lg transition-colors whitespace-nowrap" ${isDisabled} title="Hủy dự đoán"><i class="ti ti-trash"></i></button>` : ""}
+               <button onclick="submitPrediction(this, ${row[0]})" class="bg-gray-800 hover:bg-black text-white text-[10px] md:text-xs font-bold py-1.5 px-3 rounded-lg transition-colors whitespace-nowrap" ${isDisabled}>Gửi Tỉ số</button>
+               ${row[17] ? `<button onclick="cancelPrediction(this, ${row[0]})" class="bg-red-100 hover:bg-red-200 text-red-600 text-[10px] md:text-xs font-bold py-1.5 px-3 rounded-lg transition-colors whitespace-nowrap" ${isDisabled} title="Hủy dự đoán"><i class="ti ti-trash"></i></button>` : ""}
             </div>
             ${row[17] ? `<div class="text-[10px] font-semibold text-emerald-600 mt-0.5">Dự đoán của bạn: ${row[17]}</div>` : ""}
             <div class="text-[10px] text-gray-500 mt-0.5">👥 Tỉ số: <span class="font-bold text-gray-700">${row[18] || 0}</span> người | Tài: <span class="font-bold text-gray-700">${row[24] || 0}</span> - Xỉu: <span class="font-bold text-gray-700">${row[25] || 0}</span></div>
@@ -830,6 +831,32 @@ function cancelPrediction(btn, stt) {
       showToast("Lỗi: " + err.message);
       console.error(err);
       btn.innerHTML = originalText;
+    });
+}
+
+function submitTaiXiu(btn, stt) {
+  var txInput = document.getElementById("tx-val-" + stt);
+  if (!txInput) return;
+  var taixiu = txInput.value.trim();
+  if (taixiu === "") {
+    showToast("❌ Vui lòng chọn Tài hoặc Xỉu trước khi gửi!");
+    return;
+  }
+  const originalText = btn.innerText;
+  btn.innerText = "⏳...";
+
+  apiCall("submitTaiXiu", {
+    stt: stt,
+    taixiu: taixiu,
+  })
+    .then((res) => {
+      showToast(typeof res === "string" ? res : JSON.stringify(res));
+      loadData(false);
+    })
+    .catch((err) => {
+      showToast("Lỗi: " + err.message);
+      console.error(err);
+      btn.innerText = originalText;
     });
 }
 
