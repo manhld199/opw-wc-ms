@@ -429,7 +429,7 @@ function renderMatches() {
         roundName.toLowerCase().includes("vòng 8") || roundName.toLowerCase().includes("tứ kết")
           ? 500
           : roundName.toLowerCase().includes("bán kết")
-          ? 700
+          ? 500
           : 300;
       if (currentTab === "past") {
         var upperCount = row[19] || 0;
