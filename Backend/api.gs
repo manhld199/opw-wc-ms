@@ -1003,6 +1003,7 @@ function getMatchDetail(stt) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheetBet = ss.getSheetByName("Đặt cược");
   var sheetPrediction = ss.getSheetByName("Dự đoán");
+  var sheetTaixiu = ss.getSheetByName("Tài xỉu");
   var sheetData = ss.getSheetByName("Data");
 
   if (!sheetBet || !sheetData) return { error: "Không tìm thấy sheet" };
@@ -1035,8 +1036,9 @@ function getMatchDetail(stt) {
     var colNum = columnLetterToNumber(colChar);
     var choice = String(sheetBet.getRange(matchRow, colNum).getValue() || "").trim();
     var prediction = sheetPrediction ? String(sheetPrediction.getRange(matchRow, colNum).getDisplayValue() || "").trim() : "";
+    var taixiu = sheetTaixiu ? String(sheetTaixiu.getRange(matchRow, colNum).getValue() || "").trim() : "";
 
-    result.push({ name: name, choice: choice, prediction: prediction });
+    result.push({ name: name, choice: choice, prediction: prediction, taixiu: taixiu });
   }
 
   return result;

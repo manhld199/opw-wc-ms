@@ -1303,6 +1303,12 @@ function openMatchDetail(stt) {
           choiceLabel += `<div class="mt-1"><span class="text-[10px] text-blue-700 font-bold bg-blue-100 px-1.5 py-0.5 rounded border border-blue-200">Dự đoán tỉ số: ${pred}</span></div>`;
         }
 
+        var taixiu = String(v.taixiu || "");
+        if (taixiu) {
+          var txClass = taixiu === "Tài" ? "text-indigo-700 bg-indigo-50 border-indigo-200" : "text-indigo-700 bg-indigo-50 border-indigo-200";
+          choiceLabel += `<div class="mt-1"><span class="text-[10px] ${txClass} font-bold px-1.5 py-0.5 rounded border">Tài Xỉu: ${taixiu}</span></div>`;
+        }
+
         var choiceClass =
           cleaned === "Cửa trên"
             ? "text-emerald-700 bg-emerald-50 border border-emerald-100"
