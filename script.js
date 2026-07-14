@@ -937,8 +937,8 @@ window.selectTx = function(stt, val) {
   var taiBtn = document.getElementById("tx-tai-" + stt);
   var xiuBtn = document.getElementById("tx-xiu-" + stt);
   
-  var inactiveClass = "flex-1 py-1.5 md:py-2 rounded-lg border border-gray-200 text-[10px] md:text-xs font-bold transition-all tx-btn bg-white text-gray-500 hover:border-indigo-200";
-  var activeClass = "flex-1 py-1.5 md:py-2 rounded-lg border-indigo-200 text-[10px] md:text-xs font-bold transition-all tx-btn bg-indigo-50 text-indigo-700";
+  var inactiveClass = "w-12 text-center py-1.5 rounded-lg border border-gray-200 text-xs font-bold transition-all tx-btn bg-white text-gray-500 hover:border-indigo-200";
+  var activeClass = "w-12 text-center py-1.5 rounded-lg border border-indigo-200 text-xs font-bold transition-all tx-btn bg-indigo-50 text-indigo-700";
   
   if (taiBtn) taiBtn.className = inactiveClass;
   if (xiuBtn) xiuBtn.className = inactiveClass;
