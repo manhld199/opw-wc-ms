@@ -1200,11 +1200,19 @@ function getChartData() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheetScore = ss.getSheetByName("Tính điểm");
   var sheetData = ss.getSheetByName("Data");
+  
+  var sheetInfo = ss.getSheetByName("Trận đấu");
+  var sheetPrediction = ss.getSheetByName("Dự đoán");
+  var sheetTaixiu = ss.getSheetByName("Tài xỉu");
 
   if (!sheetScore || !sheetData) return { error: "Không tìm thấy sheet Tính điểm" };
 
   var scoreData = sheetScore.getRange("A3:AZ200").getValues();
   var userData = sheetData.getRange("A2:C100").getValues();
+  
+  var infoRange = sheetInfo ? sheetInfo.getRange("A3:P200").getValues() : [];
+  var predictionRange = sheetPrediction ? sheetPrediction.getRange("A3:AZ200").getDisplayValues() : [];
+  var taixiuRange = sheetTaixiu ? sheetTaixiu.getRange("A3:AZ200").getValues() : [];
 
   var users = [];
   for (var u = 0; u < userData.length; u++) {
@@ -1217,6 +1225,105 @@ function getChartData() {
         colIndex: columnLetterToNumber(colChar) - 1,
         runningScore: 0,
       });
+    }
+  }
+
+  // Tiền tính toán điểm Dự đoán & Tài Xỉu
+  var extraPointsMap = {};
+  for (var j = 0; j < infoRange.length; j++) {
+    var stt = String(infoRange[j][0]).trim();
+    if (stt === "") continue;
+    
+    extraPointsMap[stt] = {};
+    for (var u = 0; u < users.length; u++) {
+      extraPointsMap[stt][users[u].name] = 0;
+    }
+    
+    var matchStatus = String(infoRange[j][8] || "").trim();
+    var actualHomeScore = parseInt(infoRange[j][6]);
+    var actualAwayScore = parseInt(infoRange[j][7]);
+    var hasValidActualScore = !isNaN(actualHomeScore) && !isNaN(actualAwayScore) && matchStatus.includes("Kết thúc");
+    var actualScoreStr = hasValidActualScore ? (actualHomeScore + "-" + actualAwayScore) : "";
+    
+    var actualTaixiu = "";
+    if (hasValidActualScore && taixiuRange.length > j) {
+      var rateStr = String(taixiuRange[j][5] || "").replace(",", ".");
+      var taixiuRate = parseFloat(rateStr);
+      if (!isNaN(taixiuRate)) {
+        var totalGoals = actualHomeScore + actualAwayScore;
+        if (totalGoals > taixiuRate) actualTaixiu = "Tài";
+        else if (totalGoals < taixiuRate) actualTaixiu = "Xỉu";
+      }
+    }
+    
+    var matchPredictions = {};
+    var numPredictions = 0;
+    var correctPredictions = [];
+    
+    var matchTaixius = {};
+    var taiCountForMatch = 0;
+    var xiuCountForMatch = 0;
+    
+    for (var u = 0; u < users.length; u++) {
+      var pName = users[u].name;
+      var cIdx = users[u].colIndex;
+      
+      // Dự đoán tỉ số
+      if (predictionRange.length > j && predictionRange[j][cIdx]) {
+        var predVal = String(predictionRange[j][cIdx]).trim();
+        if (predVal) {
+          matchPredictions[pName] = predVal;
+          numPredictions++;
+          if (hasValidActualScore && predVal === actualScoreStr) {
+            correctPredictions.push(pName);
+          }
+        }
+      }
+      
+      // Tài xỉu
+      if (taixiuRange.length > j && taixiuRange[j][cIdx]) {
+        var txVal = String(taixiuRange[j][cIdx]).trim();
+        if (txVal === "Tài" || txVal === "Xỉu") {
+          matchTaixius[pName] = txVal;
+          if (txVal === "Tài") taiCountForMatch++;
+          else if (txVal === "Xỉu") xiuCountForMatch++;
+        }
+      }
+    }
+    
+    // Tính điểm Dự đoán
+    if (hasValidActualScore && numPredictions > 0) {
+      var sttNum = parseInt(stt);
+      var ptsPerPerson = (sttNum >= 97) ? 20 : 10;
+      var pool = numPredictions * ptsPerPerson;
+      for (var p in matchPredictions) {
+        if (correctPredictions.length > 0) {
+          if (correctPredictions.includes(p)) {
+            extraPointsMap[stt][p] += Math.floor(pool / correctPredictions.length) - ptsPerPerson;
+          } else {
+            extraPointsMap[stt][p] -= ptsPerPerson;
+          }
+        }
+      }
+    }
+    
+    // Tính điểm Tài Xỉu
+    if (hasValidActualScore && actualTaixiu !== "") {
+      var sttNum = parseInt(stt);
+      if (sttNum >= 97) {
+        var winCount = actualTaixiu === "Tài" ? taiCountForMatch : xiuCountForMatch;
+        var loseCount = actualTaixiu === "Tài" ? xiuCountForMatch : taiCountForMatch;
+        var winPts = winCount > 0 ? Math.round(300 / winCount) : 0;
+        var losePts = loseCount > 0 ? Math.round(300 / loseCount) : 0;
+        
+        for (var p in matchTaixius) {
+          if (matchTaixius[p] === actualTaixiu) {
+             extraPointsMap[stt][p] += winPts;
+          } else if (matchTaixius[p] !== "") {
+             extraPointsMap[stt][p] -= losePts;
+          }
+        }
+      }
     }
   }
 
@@ -1246,8 +1353,10 @@ function getChartData() {
 
     var currentScores = [];
     for (var u = 0; u < users.length; u++) {
-      var pt = Number(scoreData[i][users[u].colIndex]) || 0;
-      users[u].runningScore += pt;
+      var basePt = Number(scoreData[i][users[u].colIndex]) || 0;
+      var extraPt = (extraPointsMap[stt] && extraPointsMap[stt][users[u].name]) ? extraPointsMap[stt][users[u].name] : 0;
+      
+      users[u].runningScore += (basePt + extraPt);
       seriesPoints[users[u].name].push(users[u].runningScore);
       currentScores.push({ name: users[u].name, score: users[u].runningScore });
     }
