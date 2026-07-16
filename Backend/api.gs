@@ -50,7 +50,7 @@ function doPost(e) {
 function getUserInfo(email) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheetData = ss.getSheetByName("Data");
-  var data = sheetData.getRange("A2:C50").getValues();
+  var data = sheetData.getRange("A2:C200").getValues();
 
   var name = "Khách";
   var colChar = "";
@@ -70,7 +70,7 @@ function getUserInfo(email) {
     var sheetBet = ss.getSheetByName("Đặt cược");
     if (sheetBet) {
       var colNum = columnLetterToNumber(colChar);
-      var userBets = sheetBet.getRange(3, colNum, 100, 1).getValues();
+      var userBets = sheetBet.getRange(3, colNum, 200, 1).getValues();
       for (var k = 0; k < userBets.length; k++) {
         var betStr = String(userBets[k][0]);
         var match = betStr.match(/⭐(\d+)/);
@@ -105,7 +105,7 @@ function getMatches(email) {
   var sheetData = ss.getSheetByName("Data");
   var sheetPrediction = ss.getSheetByName("Dự đoán");
 
-  var userData = sheetData.getRange("A2:C50").getValues();
+  var userData = sheetData.getRange("A2:C200").getValues();
 
   var userColChar = "";
 
@@ -122,18 +122,18 @@ function getMatches(email) {
 
   var userColNum = columnLetterToNumber(userColChar);
 
-  var infoRange = sheetInfo.getRange(3, 1, 100, 16).getValues();
+  var infoRange = sheetInfo.getRange(3, 1, 200, 16).getValues();
 
-  var userBets = sheetBet.getRange(3, userColNum, 100, 1).getValues();
-  var userPredictions = sheetPrediction ? sheetPrediction.getRange(3, userColNum, 100, 1).getDisplayValues() : [];
+  var userBets = sheetBet.getRange(3, userColNum, 200, 1).getValues();
+  var userPredictions = sheetPrediction ? sheetPrediction.getRange(3, userColNum, 200, 1).getDisplayValues() : [];
   
   var sheetTaixiu = ss.getSheetByName("Tài xỉu");
-  var userTaixius = sheetTaixiu ? sheetTaixiu.getRange(3, userColNum, 100, 1).getValues() : [];
-  var taixiuRange = sheetTaixiu ? sheetTaixiu.getRange(3, 1, 100, 50).getValues() : [];
+  var userTaixius = sheetTaixiu ? sheetTaixiu.getRange(3, userColNum, 200, 1).getValues() : [];
+  var taixiuRange = sheetTaixiu ? sheetTaixiu.getRange(3, 1, 200, 50).getValues() : [];
 
   var results = [];
 
-  var predictionRange = sheetPrediction ? sheetPrediction.getRange(3, 1, 100, 50).getValues() : [];
+  var predictionRange = sheetPrediction ? sheetPrediction.getRange(3, 1, 200, 50).getValues() : [];
   var validCols = [];
   for (var i = 0; i < userData.length; i++) {
     if (userData[i][0] && userData[i][2]) {
@@ -141,7 +141,7 @@ function getMatches(email) {
     }
   }
 
-  var allBets = sheetBet.getRange(3, 1, 100, 50).getValues();
+  var allBets = sheetBet.getRange(3, 1, 200, 50).getValues();
 
   for (var j = 0; j < infoRange.length; j++) {
     if (infoRange[j][0] !== "" && infoRange[j][8] === "Chưa đá") {
@@ -205,7 +205,7 @@ function submitBet(email, stt, choice, prediction, taixiu) {
   var sheetPrediction = ss.getSheetByName("Dự đoán");
   var sheetTaixiu = ss.getSheetByName("Tài xỉu");
 
-  var userData = sheetData.getRange("A2:C50").getValues();
+  var userData = sheetData.getRange("A2:C200").getValues();
 
   var userName = "Người chơi";
   var userColChar = "";
@@ -224,7 +224,7 @@ function submitBet(email, stt, choice, prediction, taixiu) {
 
   var userColNum = columnLetterToNumber(userColChar);
 
-  var dataInfo = sheetInfo.getRange("A3:P100").getValues();
+  var dataInfo = sheetInfo.getRange("A3:P200").getValues();
 
   var row = -1;
   var matchData = null;
@@ -368,7 +368,7 @@ function submitScorePrediction(email, stt, prediction) {
     return "Lỗi: Không tìm thấy sheet Dự đoán!";
   }
 
-  var userData = sheetData.getRange("A2:C50").getValues();
+  var userData = sheetData.getRange("A2:C200").getValues();
 
   var userName = "Người chơi";
   var userColChar = "";
@@ -387,7 +387,7 @@ function submitScorePrediction(email, stt, prediction) {
 
   var userColNum = columnLetterToNumber(userColChar);
 
-  var dataInfo = sheetInfo.getRange("A3:P100").getValues();
+  var dataInfo = sheetInfo.getRange("A3:P200").getValues();
 
   var row = -1;
   var matchData = null;
@@ -449,7 +449,7 @@ function submitTaiXiu(email, stt, taixiu) {
     return "Lỗi: Không tìm thấy sheet Tài xỉu!";
   }
 
-  var userData = sheetData.getRange("A2:C50").getValues();
+  var userData = sheetData.getRange("A2:C200").getValues();
 
   var userName = "Người chơi";
   var userColChar = "";
@@ -468,7 +468,7 @@ function submitTaiXiu(email, stt, taixiu) {
 
   var userColNum = columnLetterToNumber(userColChar);
 
-  var dataInfo = sheetInfo.getRange("A3:P100").getValues();
+  var dataInfo = sheetInfo.getRange("A3:P200").getValues();
 
   var row = -1;
   var matchData = null;
@@ -527,7 +527,7 @@ function getPastMatches(email) {
   var sheetData = ss.getSheetByName("Data");
   var sheetPrediction = ss.getSheetByName("Dự đoán");
 
-  var userData = sheetData.getRange("A2:C50").getValues();
+  var userData = sheetData.getRange("A2:C200").getValues();
 
   var userColChar = "";
 
@@ -544,18 +544,18 @@ function getPastMatches(email) {
 
   var userColNum = columnLetterToNumber(userColChar);
 
-  var infoRange = sheetInfo.getRange(3, 1, 100, 16).getValues();
+  var infoRange = sheetInfo.getRange(3, 1, 200, 16).getValues();
 
-  var userBets = sheetBet.getRange(3, userColNum, 100, 1).getValues();
-  var userPredictions = sheetPrediction ? sheetPrediction.getRange(3, userColNum, 100, 1).getDisplayValues() : [];
+  var userBets = sheetBet.getRange(3, userColNum, 200, 1).getValues();
+  var userPredictions = sheetPrediction ? sheetPrediction.getRange(3, userColNum, 200, 1).getDisplayValues() : [];
   
   var sheetTaixiu = ss.getSheetByName("Tài xỉu");
-  var userTaixius = sheetTaixiu ? sheetTaixiu.getRange(3, userColNum, 100, 1).getValues() : [];
-  var taixiuRange = sheetTaixiu ? sheetTaixiu.getRange(3, 1, 100, 50).getValues() : [];
+  var userTaixius = sheetTaixiu ? sheetTaixiu.getRange(3, userColNum, 200, 1).getValues() : [];
+  var taixiuRange = sheetTaixiu ? sheetTaixiu.getRange(3, 1, 200, 50).getValues() : [];
 
   var results = [];
 
-  var predictionRange = sheetPrediction ? sheetPrediction.getRange(3, 1, 100, 50).getValues() : [];
+  var predictionRange = sheetPrediction ? sheetPrediction.getRange(3, 1, 200, 50).getValues() : [];
   var validCols = [];
   for (var i = 0; i < userData.length; i++) {
     if (userData[i][0] && userData[i][2]) {
@@ -563,7 +563,7 @@ function getPastMatches(email) {
     }
   }
 
-  var allBets = sheetBet.getRange(3, 1, 100, 50).getValues();
+  var allBets = sheetBet.getRange(3, 1, 200, 50).getValues();
 
   for (var j = 0; j < infoRange.length; j++) {
     // Điều kiện: Lấy những trận đã có số STT và Trạng thái KHÁC "Chưa đá"
@@ -639,17 +639,17 @@ function getLeaderboard() {
 
   if (!sheet) return { error: "Không tìm thấy sheet Bảng vàng" };
 
-  var dataRange = sheet.getRange("A3:L50").getValues();
+  var dataRange = sheet.getRange("A3:L200").getValues();
   var leaderboard = [];
 
   // Lấy dữ liệu Trận đấu và Đặt cược để tính danh hiệu
-  var infoRange = sheetInfo ? sheetInfo.getRange(3, 1, 100, 16).getValues() : [];
-  var betRange = sheetBet ? sheetBet.getRange(3, 1, 100, 50).getValues() : [];
+  var infoRange = sheetInfo ? sheetInfo.getRange(3, 1, 200, 16).getValues() : [];
+  var betRange = sheetBet ? sheetBet.getRange(3, 1, 200, 50).getValues() : [];
   var sheetPrediction = ss.getSheetByName("Dự đoán");
-  var predictionRange = sheetPrediction ? sheetPrediction.getRange(3, 1, 100, 50).getDisplayValues() : [];
+  var predictionRange = sheetPrediction ? sheetPrediction.getRange(3, 1, 200, 50).getDisplayValues() : [];
   var sheetTaixiu = ss.getSheetByName("Tài xỉu");
-  var taixiuRange = sheetTaixiu ? sheetTaixiu.getRange(3, 1, 100, 50).getValues() : [];
-  var userData = sheetData ? sheetData.getRange("A2:C50").getValues() : [];
+  var taixiuRange = sheetTaixiu ? sheetTaixiu.getRange(3, 1, 200, 50).getValues() : [];
+  var userData = sheetData ? sheetData.getRange("A2:C200").getValues() : [];
 
   // Xây dựng object user để lưu các chỉ số tính danh hiệu
   var userStats = {};
@@ -1009,10 +1009,10 @@ function getMatchDetail(stt) {
   if (!sheetBet || !sheetData) return { error: "Không tìm thấy sheet" };
 
   // Lấy danh sách tất cả người chơi (email, tên, cột bình chọn)
-  var userData = sheetData.getRange("A2:C50").getValues();
+  var userData = sheetData.getRange("A2:C200").getValues();
 
   // Tìm dòng tương ứng với STT trong sheet Đặt cược (cột A, dữ liệu từ hàng 3)
-  var sttValues = sheetBet.getRange(3, 1, 100, 1).getValues();
+  var sttValues = sheetBet.getRange(3, 1, 200, 1).getValues();
   var matchRow = -1;
 
   for (var j = 0; j < sttValues.length; j++) {
@@ -1050,7 +1050,7 @@ function syncLiveScores() {
   var sheetInfo = ss.getSheetByName("Trận đấu");
 
   // Đọc dữ liệu nhanh từ Sheet trước để kiểm tra trạng thái
-  var infoRange = sheetInfo.getRange("A3:P100").getValues();
+  var infoRange = sheetInfo.getRange("A3:P200").getValues();
   var shouldFetchApi = false;
   var now = new Date();
 
@@ -1208,7 +1208,7 @@ function getChartData() {
   if (!sheetScore || !sheetData) return { error: "Không tìm thấy sheet Tính điểm" };
 
   var scoreData = sheetScore.getRange("A3:AZ200").getValues();
-  var userData = sheetData.getRange("A2:C100").getValues();
+  var userData = sheetData.getRange("A2:C200").getValues();
   
   var infoRange = sheetInfo ? sheetInfo.getRange("A3:P200").getValues() : [];
   var predictionRange = sheetPrediction ? sheetPrediction.getRange("A3:AZ200").getDisplayValues() : [];
