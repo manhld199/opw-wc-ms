@@ -426,7 +426,9 @@ function renderMatches() {
 
     if (isPoolStage) {
       var poolValue =
-        roundName.toLowerCase().includes("vòng 8") || roundName.toLowerCase().includes("tứ kết")
+        roundName.toLowerCase().includes("chung kết") || roundName.toLowerCase().includes("hạng 3")
+          ? 1000
+          : roundName.toLowerCase().includes("vòng 8") || roundName.toLowerCase().includes("tứ kết")
           ? 500
           : roundName.toLowerCase().includes("bán kết")
           ? 700

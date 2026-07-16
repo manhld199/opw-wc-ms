@@ -821,8 +821,9 @@ function getLeaderboard() {
         var winCount = actualTaixiu === "Tài" ? taiCountForMatch : xiuCountForMatch;
         var loseCount = actualTaixiu === "Tài" ? xiuCountForMatch : taiCountForMatch;
 
-        var winPts = winCount > 0 ? Math.round(300 / winCount) : 0;
-        var losePts = loseCount > 0 ? Math.round(300 / loseCount) : 0;
+        var txPool = (sttNum >= 99) ? 500 : 300;
+        var winPts = winCount > 0 ? Math.round(txPool / winCount) : 0;
+        var losePts = loseCount > 0 ? Math.round(txPool / loseCount) : 0;
 
         for (var p in matchTaixius) {
           if (matchTaixius[p] === actualTaixiu) {
@@ -1313,8 +1314,9 @@ function getChartData() {
       if (sttNum >= 97) {
         var winCount = actualTaixiu === "Tài" ? taiCountForMatch : xiuCountForMatch;
         var loseCount = actualTaixiu === "Tài" ? xiuCountForMatch : taiCountForMatch;
-        var winPts = winCount > 0 ? Math.round(300 / winCount) : 0;
-        var losePts = loseCount > 0 ? Math.round(300 / loseCount) : 0;
+        var txPool = (sttNum >= 99) ? 500 : 300;
+        var winPts = winCount > 0 ? Math.round(txPool / winCount) : 0;
+        var losePts = loseCount > 0 ? Math.round(txPool / loseCount) : 0;
         
         for (var p in matchTaixius) {
           if (matchTaixius[p] === actualTaixiu) {
