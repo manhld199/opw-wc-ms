@@ -253,10 +253,10 @@
 }
 
 /* Hide specific elements as requested */
-#userInfo,
-#myStatsCard,
-#btnPastMatches,
-#btnLeaderboard,
-#btnChart {
+body:not(.show-hidden) #userInfo,
+body:not(.show-hidden) #myStatsCard,
+body:not(.show-hidden) #btnPastMatches,
+body:not(.show-hidden) #btnLeaderboard,
+body:not(.show-hidden) #btnChart {
   display: none !important;
 }

@@ -24,6 +24,11 @@ var leaderboardCache = [];
 document.addEventListener("DOMContentLoaded", () => {
   const savedEmail = localStorage.getItem("currentUserEmail");
   const savedName = localStorage.getItem("currentUserName");
+  
+  if (savedEmail === "onducphat@gmail.com" || savedEmail === "manhld199.work@gmail.com") {
+    document.body.classList.add("show-hidden");
+  }
+
   if (savedEmail) {
     currentUserEmail = savedEmail;
 
@@ -71,6 +76,12 @@ function handleCredentialResponse(response) {
   // Save login session
   localStorage.setItem("currentUserEmail", payload.email);
   localStorage.setItem("currentUserName", payload.name || "");
+
+  if (payload.email === "onducphat@gmail.com" || payload.email === "manhld199.work@gmail.com") {
+    document.body.classList.add("show-hidden");
+  } else {
+    document.body.classList.remove("show-hidden");
+  }
 
   document.getElementById("loginSectionWrapper").style.display = "none";
   document.getElementById("userInfo").style.display = "flex";
