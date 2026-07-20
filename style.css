@@ -252,11 +252,4 @@
   100% { box-shadow: 0 0 0 0px rgba(239, 68, 68, 0); }
 }
 
-/* Hide specific elements as requested */
-body:not(.show-hidden) #userInfo,
-body:not(.show-hidden) #myStatsCard,
-body:not(.show-hidden) #btnPastMatches,
-body:not(.show-hidden) #btnLeaderboard,
-body:not(.show-hidden) #btnChart {
-  display: none !important;
-}
+
